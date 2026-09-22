@@ -1,0 +1,42 @@
+[project]
+name = "adpulse-workspace"
+version = "0.0.1"
+description = "ADPulse نبض - continuous Active Directory security control assessment (engine workspace)"
+requires-python = ">=3.12,<3.13"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Naif Al Anazi" }]
+
+[tool.uv.workspace]
+members = ["packages/adsnap", "packages/adrules"]
+
+[tool.uv.sources]
+adsnap = { workspace = true }
+adrules = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=5.0",
+  "ruff>=0.6",
+  "mypy>=1.11",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["packages/adsnap/src", "packages/adrules/src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "S", "SIM"]
+ignore = ["S101"]  # assert is fine in tests
+
+[tool.pytest.ini_options]
+testpaths = ["packages/adsnap/tests", "packages/adrules/tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["adsnap", "adrules"]
+mypy_path = "packages/adsnap/src:packages/adrules/src"

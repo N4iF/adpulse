@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.uv/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.pfx
+*.key
+
+# Snapshots, findings and reports produced by runs (may contain domain data)
+snapshots/
+*.snapshot.json
+*.snapshot.json.gz
+findings/
+reports/
+out/
+
+# Lab artifacts (large or machine-specific)
+lab/**/*.iso
+lab/**/*.vhdx
+lab/**/*.vhd
+lab/**/LabSources/
+lab/**/*.log
+
+# Node (for any tooling)
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

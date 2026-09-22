@@ -1,0 +1,29 @@
+# adsnap
+
+Active Directory snapshot collector and versioned snapshot schema. Part of the ADPulse نبض engine.
+
+**Collectors produce facts. They never judge.**
+
+## What it will do (Phase 1)
+
+- Connect over LDAPS with an ordinary domain account (standard-user assessment) or an elevated one
+  (privileged assessment).
+- Paged searches for users, computers, groups, OUs, GPOs, domain/DC objects, trusts, password policy and
+  fine-grained password policies, certificate templates and CAs (Configuration NC).
+- Read security descriptors with the `LDAP_SERVER_SD_FLAGS` control (OID `1.2.840.113556.1.4.801`,
+  flags 0x07 = owner | group | DACL) and parse them with `winacl` into a canonical rights vocabulary.
+- Read SYSVOL over SMB for Group Policy Preference files and `GptTmpl.inf` (presence of `cpassword` is
+  recorded; the value is never stored or decrypted).
+- Write a `Snapshot` JSON with `schema_version`, `objects[]` (identity = objectGUID; `raw` vs `derived`
+  fields), `policies`, `pki`, `trusts`, `coverage` and `errors`.
+
+## CLI (planned)
+
+```bash
+adsnap collect --dc 10.10.10.10 --domain corp.local --user standard@corp.local --out snapshot.json
+adsnap collect --from-fixture tests/fixtures/lab-seeded.json --out snapshot.json
+```
+
+## Status
+
+Skeleton only. Schema and tests come first.
