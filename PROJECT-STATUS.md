@@ -1,69 +1,55 @@
 # PROJECT-STATUS — ADPulse نبض
 
-_Last updated: 2026-09-23. Update at the end of every session. Engine content only (this repo is public);
+_Last updated: 2026-09-24. Update at the end of every session. Engine content only (this repo is public);
 non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — engine + lab.** The engine (this repo) and the VMware lab are being built now; development
-runs inside the lab DC (D30). A first
-product slice (dashboard, report, API) will be built on the engine in a separate repository from
-15 Oct 2026; until then, application work exists only as documents.
+**Phase 1 — MVP-1 first (D31).** Three password-policy checks working end to end inside the lab DC:
+collect → rules → findings → HTML report → fix → rescan shows resolved. Everything else is a later,
+numbered increment. Development runs inside the lab DC in VMware (D30).
 
 ## Done
 
-- 2026-09-21/22: design approved (`docs/superpowers/specs/`); research: 104-check AD catalog, collectors,
-  lab tooling, comparable tools, NCA ECC control text verified against the official PDF; external
-  technical feedback reviewed (`docs/feedback/`); workspace and repos scaffolded.
-- 2026-09-23: documentation audit applied (Finding key, derived-field dictionary, coverage semantics,
-  Tier 0 v1, lab prerequisites, `uv` workspace fix, check count corrected to 104).
+- 2026-09-21/22: design approved (`docs/superpowers/specs/`); research (104-check catalog, collectors, lab,
+  comparable tools, NCA ECC text verified); workspace and repos scaffolded.
+- 2026-09-23: documentation audit applied; one-DC scope (D29); in-DC VMware workflow (D30).
+- 2026-09-24: MVP-1 defined (D31); dependencies trimmed to pydantic, ldap3, typer, pyyaml, jinja2.
 
-## Next actions (in order)
+## Next actions (in order) — plan: `docs/superpowers/plans/2026-09-24-mvp1.md`
 
-Tags: **[agent]** = an AI session can do it on any machine; **[Naif, admin]** = needs Naif and an
-elevated prompt / downloads.
+Tags: **[agent]** = an AI session; **[Naif, admin]** = Naif, elevated prompt or VMware.
 
 | # | Action | Who |
 |---|---|---|
-| 1 | `uv sync` (installs both packages editable), commit `uv.lock`; `uv run pytest` exits 5 ("no tests collected") until the first test exists — that is expected; `uv run ruff check`. | [agent] |
-| 2 | Freeze `adsnap.model` (Snapshot, objects[] with `raw`/`derived`/`security_descriptor`, coverage, errors) and a `make_snapshot()` test builder — tests first. See `docs/architecture.md` → Derived-field dictionary. | [agent] |
-| 3 | Freeze `adrules.finding` (Finding, CheckResult; key = rule_id, object_id, subject_id) — tests first. | [agent] |
-| 4 | VMware lab: `DC01` + `SRV01` (Windows Server 2022, NAT network); install dev tools and Claude Code on DC01, clone to `C:\ADPulse\` (`docs/SETUP.md`); snapshot `clean`. From then on, sessions run inside DC01 (D30). | [Naif, admin] |
-| 4b | First session inside DC01: fill in "Lab inventory" in `lab/README.md`; write `lab/Seed.ps1` per the plan (Task 18) and run it; Naif takes snapshot `seeded`. | [agent on DC01] |
-| 5 | Collector against DC01 as `adpulse.reader`: users, computers, groups, domain head, GPOs (+SYSVOL GPP files); security descriptors via SD-flags control 0x07; `coverage` and `errors` recorded. Fixture recorded from the lab (sanitized). | [agent after 4] |
-| 6 | First 3 rules with tests: DEL-01, KRB-03, ACL-01. `adrules evaluate snapshot.json` prints findings JSON. This is the engine vertical slice. | [agent] |
-| 7 | Remaining 9 Tier A rules; evidence-backed graph with the designed path; controls-evidence module (ECC 2-2-3-x); `lab/expected-findings.yaml` truth table passing. | [agent + Naif for lab seeding] |
+| 1 | VMware: `DC01` + `SRV01`, dev tools and Claude Code on DC01, clone to `C:\ADPulse\` (`docs/SETUP.md`); snapshot `clean`. | [Naif, admin] |
+| 2 | First session inside DC01: fill in "Lab inventory" in `lab/README.md`; `uv sync`; `uv run pytest`. | [agent on DC01] |
+| 3 | MVP-1 plan tasks 1–6: snapshot model, Finding, rule runner, PWD-01/02/04, domain-head collector, `adrules scan` with the HTML report and the two-scan diff — tests first. | [agent] |
+| 4 | Lab: `lab/Set-WeakPasswordPolicy.ps1` and `lab/Fix-PasswordPolicy.ps1`; first scan shows 3 findings, fix, rescan shows 3 resolved. Naif takes snapshot `seeded`. | [agent on DC01 + Naif] |
+| 5 | Increments in order, each ending in a working rescan: 2 ECC control view · 3 account flags · 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. | [agent] |
 
 ## Blockers / open questions
 
-- Lab being set up by Naif in VMware (DC01 + SRV01). Sessions move inside DC01 once it has the dev
-  tools (D30). Scope deliberately minimal: no AD CS, no scale seeding (D29).
-- `impacket` is quarantined by Windows Defender on install; replaced by `smbprotocol` (D28). If any
-  future dependency trips Defender, prefer replacing it over adding an exclusion.
-- Unprivileged DACL read via SD-flags 0x07 is an inference from MS-ADTS; confirm empirically in step 5.
+- Lab being set up by Naif in VMware (D30).
+- The Default Domain Policy can re-apply its own password settings; on the first DC session, confirm the
+  weak values hold for ten minutes (`lab/README.md` → MVP-1 lab).
 
-## Scope boundary (verbatim from the approved design)
+## Scope
 
-**Tier A — first product slice (P0):** connect to AD (standard user) · collect snapshot · run 12 reliable
-checks · produce evidence · map selected findings to ECC (technical evidence) · show findings · show a
-derived potential privilege-escalation path · generate EN/AR report · rescan after remediation · show
-resolved/regressed state.
+**MVP-1 (now):** PWD-01 minimum password length · PWD-02 complexity · PWD-04 account lockout — all read
+from the domain object as a standard user; `adrules scan` → `ScanResult` JSON + static HTML report (EN/AR,
+printable); lifecycle new / open / resolved.
 
-**12 Tier A checks:** DEL-01, DEL-05, ACL-01, ACL-03, PRV-04, KRB-01, KRB-02, KRB-03, GPO-01, ACC-01,
-ACC-04, PWD-01 (6 Critical, 6 High). All run against a single domain controller. Detection details:
-`docs/research/ad-check-catalog.md` → "Tier A".
+**Increments (in order, each small and demo-worthy):** 2 ECC control view · 3 account flags (ACC-01,
+KRB-02) · 4 plain-attribute checks (KRB-03, ACC-04, DEL-05, DEL-01) · 5 permissions and one potential
+privilege-escalation path (ACL-01, ACL-03, PRV-04) · 6 SYSVOL (GPO-01), krbtgt age (KRB-01), regressed.
+Increments 1–6 together are the October ceiling (the former "Tier A").
 
-**Tier B — stretch (P1):** PKI-01 (needs an AD CS server in the lab), PWD-02/04, PRV-01/02/06, ACC-09,
-STL-01/02, OS-01 (finding only), Tier 0 closure via control rights, more GPO checks, Arabic/RTL polishing,
-trend visualizations, demo automation, basic scheduler, lab scale (BadBlood) and extra VMs.
-
-**Tier C — ADPulse future (P2):** the full 104-check catalog and beyond, multiple collectors, advanced
-ADCS, cross-domain/multi-forest, continuous scheduling, integrations, AI enrichment, historical
-analytics, category-scoring research, enterprise auth/RBAC, distributed deployment.
+**Later (after the Cyberthon):** the rest of the 104-check catalog, AD CS, more collectors, scheduling,
+integrations, AI enrichment.
 
 ## Risks
 
-- Vertical slice slips → cut Tier A checks, never add Tier B.
+- MVP-1 slips → nothing else starts until it works end to end.
 - Public repo → no business, strategy or personal content here; review `git diff --staged` before every push.
-- `winacl` is stale (0.1.9, May 2024) → pinned; test the structures we depend on.
-- Demo must run offline on the laptop (lite lab = DC01 only).
+- The demo must run offline on the laptop (copy of the VMware lab).

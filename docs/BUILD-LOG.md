@@ -32,3 +32,14 @@ This log, together with the git history, is the honest timeline of the project.
   DC01 — Claude Code in PowerShell from a git clone at `C:\ADPulse\`. Rewrote `docs/SETUP.md` for Windows
   Server 2022 (no winget; official installers), added "Where this session runs" to `CLAUDE.md`, snapshot
   discipline to `lab/README.md` and `docs/HANDOFF.md`.
+
+## 2026-09-24
+
+- MVP-1 first (D31): a small supervisor panel (three Opus reviewers, one Sonnet consistency check, one
+  synthesizer) reviewed all docs against the MVP-first, in-DC approach. Outcome: MVP-1 = PWD-01/02/04 on
+  the domain object, `adrules scan` → `ScanResult` + static EN/AR HTML report, new/open/resolved diff with
+  a "not re-assessed" guard; everything else becomes increments 2–6.
+- Dependencies trimmed: winacl, smbprotocol, networkx removed; jinja2 added; `uv.lock` regenerated.
+- New plan `docs/superpowers/plans/2026-09-24-mvp1.md` (9 tasks); the full-scope plan is now reference
+  only. Architecture, spec, status, lab README and contribution docs aligned; lab scripts for MVP-1 do not
+  force a group-policy refresh (it could re-apply the Default Domain Policy's values).

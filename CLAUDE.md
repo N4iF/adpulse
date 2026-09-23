@@ -41,8 +41,9 @@ When running on DC01:
   of engineering milestones); never organizer rules or their interpretation, organizer questions or
   answers, team composition, registration logistics, risks or tactics.
 - **Never scan a real domain.** Lab (`corp.local` in VMware) only.
-- **Keep it simple.** The smallest structure that meets the goal; no extra VMs, services, libraries or
-  ceremony without a Tier A reason (D29).
+- **Keep it simple, MVP first.** The smallest slice that works end to end comes first (MVP-1, D31);
+  everything else is a later increment. No extra VMs, services, libraries or ceremony before an
+  increment needs them.
 - **Data minimization:** store evidence needed to explain a finding, never secrets unnecessary to explain
   it (no GPP password values, no decrypted secrets, redact password-like strings, no credentials in fixtures).
 - **Terminology:** "ECC technical evidence / alignment" (never "ECC compliance" or "compliance score");
@@ -69,11 +70,12 @@ Rules never read `raw`; they read `derived` fields and the parsed `security_desc
   tests. Graph edges ship with precondition tests.
 - Lint/format with `ruff`. Type hints everywhere; pydantic v2 models.
 - Object identity is `object_id` = objectGUID (every AD object has one); `object_sid` is nullable.
-- A rule returns one `CheckResult`; each `Finding` inside it is one failure on one object. Finding key is
+- A rule's `evaluate(snapshot, meta, ctx)` returns `list[Finding]` (one per failure on one object); the
+  runner wraps it in a `CheckResult` (D31). Finding key is
   `(rule_id, object_id, subject_id)`; `subject_id` is the trustee for ACL checks, else null.
 - Tests: `uv run pytest` runs with `--import-mode=importlib` (two `tests/` packages). Also
-  `uv run ruff check`. Rule files are `del_01.yaml` + `del_01.py` (importable names, no hyphens).
-- Pin `winacl` to an exact version/commit and test the security-descriptor structures we depend on.
+  `uv run ruff check`. Rule files are `pwd_01.yaml` + `pwd_01.py` (importable names, no hyphens).
+- When an increment adds a library (e.g. `winacl` in increment 5), pin it and test what we rely on.
 - Docs: design specs under `docs/superpowers/specs/`, implementation plans under `docs/superpowers/plans/`.
 
 ## Where things live
@@ -85,6 +87,8 @@ Rules never read `raw`; they read `derived` fields and the parsed `security_desc
 | What was built when | `docs/BUILD-LOG.md` |
 | Setup on a new machine | `docs/SETUP.md` |
 | Design spec | `docs/superpowers/specs/2026-09-22-adpulse-design.md` |
+| **Plan to execute now (MVP-1)** | `docs/superpowers/plans/2026-09-24-mvp1.md` |
+| Reference plan for later increments | `docs/superpowers/plans/2026-09-23-phase1-engine.md` |
 | Check catalog (104 checks) and the Tier A twelve | `docs/research/ad-check-catalog.md` |
 | Lab contract, prerequisites, designed path | `lab/README.md` |
 | Collector/lab/tooling research | `docs/research/stack-and-lab.md` |

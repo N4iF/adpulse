@@ -39,7 +39,8 @@ A VMware snapshot revert also reverts the git clone on DC01's disk.
 3. Naif takes and reverts snapshots on the host (VMware UI or `vmrun`); a session inside the VM cannot
    revert its own machine.
 
-Snapshots: `clean` (domain built, dev tools installed, nothing seeded) and `seeded` (after `Seed.ps1`).
+Snapshots: `clean` (domain built, dev tools installed, nothing changed) and `seeded` (after
+`Set-WeakPasswordPolicy.ps1` for MVP-1; after `Seed.ps1` once later increments exist).
 For the laptop demo, copy the VM folders (or export to OVF) and open them in VMware on the laptop.
 
 ## Build
@@ -50,13 +51,30 @@ For the laptop demo, copy the VM folders (or export to OVF) and open them in VMw
 | 2. Promote DC01 (`Install-DC.ps1`, only if the forest does not exist yet); join SRV01 to the domain | DC01 / SRV01, elevated PowerShell |
 | 3. Install dev tools and Claude Code on DC01, clone the repos (`docs/SETUP.md`) | DC01, Naif |
 | 4. Snapshot `clean` | host, Naif |
-| 5. Run `Seed.ps1` in an elevated PowerShell on DC01 (items below) | DC01 |
+| 5. MVP-1: run `Set-WeakPasswordPolicy.ps1` in an elevated PowerShell on DC01 | DC01 |
 | 6. Snapshot `seeded` | host, Naif |
 
-The DEL-01 item below uses the real member server `SRV01` when it is joined to the domain; the computer
-object `APP01` is the fallback when there is no second server.
+## MVP-1 lab (D31) — the only lab work before MVP-1 is green
 
-## What `Seed.ps1` creates
+| Script (elevated PowerShell on DC01) | What it does |
+|---|---|
+| `Set-WeakPasswordPolicy.ps1` | Creates `adpulse.reader` (Domain Users only) and the self-signed LDAPS certificate if missing; sets the default domain password policy to minimum length 6, complexity off, lockout threshold 0; prints the policy it reads back. |
+| `Fix-PasswordPolicy.ps1` | Sets minimum length 14, complexity on, lockout threshold 5 with a 15-minute window; prints the policy it reads back. |
+
+Demo loop: weak policy → `adrules scan` shows 3 findings → `Fix-PasswordPolicy.ps1` → `adrules scan`
+shows 3 resolved. Note: a fresh Windows Server 2022 domain already fails PWD-01 (default minimum length 7)
+and PWD-04 (default lockout threshold 0), so the clean baseline for MVP-1 is PWD-01 and PWD-04.
+
+**Check on the first DC session:** the scripts change the domain object directly and do not force a
+group-policy refresh, because a refresh could re-apply the Default Domain Policy's own values. Run the
+weak script, wait ten minutes, scan again and confirm the values held. If they were reverted, change
+the scripts to edit the password settings inside the Default Domain Policy instead.
+
+## Later increments — what the full `Seed.ps1` will create
+
+Not built before MVP-1 works. Each row arrives with its increment (numbers in `PROJECT-STATUS.md`). The
+DEL-01 item uses the real member server `SRV01` when it is joined to the domain; the computer object
+`APP01` is the fallback.
 
 | Item | Detail |
 |---|---|
@@ -80,17 +98,19 @@ object `APP01` is the fallback when there is no second server.
 removes the GenericWrite ACE, ACL-03 becomes `resolved` and the path disappears. No other seed may give
 `helpdesk` a route to Tier 0.
 
-**Clean baseline:** the `clean` checkpoint must produce zero Tier A findings except DEL-05 (default
-quota) and possibly KRB-01 (threshold-dependent); both are documented in `expected-findings.yaml`.
+**Clean baseline (full scope):** besides PWD-01 and PWD-04 above, a default domain also fails DEL-05
+(default quota) and possibly KRB-01 (threshold-dependent); `expected-findings.yaml` records each baseline
+finding as its increment lands.
 
 `expected-findings.yaml` = expected state → actual state → finding: the ground-truth dataset for the lab
 acceptance criteria (100% detection of seeded findings, 0 unexpected findings on the clean baseline, every
 result with reproducible evidence, every remediation causing the expected lifecycle transition).
 
-## Scripts (to be written in Phase 1)
+## Scripts
 
-`Install-DC.ps1`, `Seed.ps1`, `Drift.ps1` (changes lab state between scans for the lifecycle demo),
-`Fix-<check>.ps1` for each of the 12 checks. All run inside DC01 in an elevated PowerShell. Reset and
+MVP-1: `Set-WeakPasswordPolicy.ps1`, `Fix-PasswordPolicy.ps1` (and `Install-DC.ps1` only if the forest
+does not exist yet). Later increments: `Seed.ps1`, `Drift.ps1`, one `Fix-<check>.ps1` per check. All run
+inside DC01 in an elevated PowerShell. Reset and
 export are VMware operations on the host (see "Snapshot discipline"), not scripts.
 
 ## `.env` on DC01 (git-ignored, repo root)
@@ -107,4 +127,4 @@ ADPULSE_CA_CERT=lab/dc01-ldaps.cer   # exported self-signed certificate
 ## Rejected for Phase 1
 
 Hyper-V (replaced by VMware on 2026-09-23, D30), AutomatedLab, BadBlood and vulnerable-AD (noise we
-don't need for 12 checks), GOAD/Ludus, an AD CS server (only PKI-01 needs it — Tier B).
+don't need), GOAD/Ludus, an AD CS server (only PKI-01 needs it — after the Cyberthon).

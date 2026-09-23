@@ -37,7 +37,7 @@ See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest` (runs wit
 
 1. Pick the id from `docs/research/ad-check-catalog.md` (or propose a new one in the same format).
 2. Add `packages/adrules/src/adrules/catalog/<id_snake>.yaml` (e.g. `del_01.yaml`: metadata, bilingual
-   texts, mappings, `requires_coverage`) and `<id_snake>.py` with `evaluate(snapshot) -> CheckResult`
+   texts, mappings, `requires_coverage`) and `<id_snake>.py` with `evaluate(snapshot, meta, ctx) -> list[Finding]`
    (a status plus one `Finding` per failing object, or per object/trustee pair for ACL checks).
 3. Add `tests/catalog/test_<id_snake>.py` with a failing and a passing mini-snapshot built with
    `adsnap.testing.make_snapshot`.

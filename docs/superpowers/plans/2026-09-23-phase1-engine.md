@@ -1,16 +1,24 @@
 # Phase 1 — Engine Vertical Slice + Single-DC Lab — Implementation Plan
 
+> **Status (2026-09-24, D31): reference only — do not execute top to bottom.** Build MVP-1 first with
+> `2026-09-24-mvp1.md`. This plan is the source for later increments (numbers in `PROJECT-STATUS.md`);
+> take one increment at a time and adapt its task to the MVP-1 code. Two known differences: the rule
+> contract is `evaluate(snapshot, meta, ctx) -> list[Finding]` with `RuleContext(mode)` until Tier 0 is
+> added, and test files must not import each other (pytest `--import-mode=importlib`) — use `conftest.py`
+> fixtures instead of `from tests.catalog.test_del_01 import run`.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Collect a snapshot of a lab Active Directory as a standard user, evaluate the 12 Tier A checks into evidence-backed findings, derive one potential privilege-escalation path, map findings to ECC 2-2-3-x technical evidence, and diff two snapshots into new / open / resolved / regressed — all from the CLI, all test-first.
 
 **Architecture:** `adsnap` (collector + versioned snapshot schema; produces facts) and `adrules` (Finding model, Tier 0 v1, YAML+Python rule catalog, graph, controls, lifecycle; judges). Rules read only `derived` fields and the parsed `security_descriptor`, never `raw`. One `objects[]` list holds every AD object; identity is objectGUID. The lab is VMware (`DC01` + member server `SRV01`); sessions run inside DC01 and a script seeds it; `expected-findings.yaml` is the ground truth.
 
-**Tech Stack:** Python 3.12, uv workspace, pydantic 2, ldap3 2.9, winacl 0.1.9, smbprotocol 1.17, networkx 3, PyYAML, typer, pytest, ruff. PowerShell 5.1 inside DC01 (VMware, where sessions run, D30) (via PowerShell Direct). Windows Server 2022 evaluation.
+**Tech Stack:** Python 3.12, uv workspace, pydantic 2, ldap3 2.9, winacl 0.1.9, smbprotocol 1.17, networkx 3, PyYAML, typer, pytest, ruff. PowerShell 5.1 inside DC01 (VMware, where sessions run, D30). Windows Server 2022 evaluation.
 
 **Spec:** `docs/superpowers/specs/2026-09-22-adpulse-design.md` (amended D21–D29). Contracts: `docs/architecture.md` (derived-field dictionary, coverage, Tier 0 v1), `docs/research/ad-check-catalog.md` → "Tier A", `lab/README.md`.
 
-**Conventions for every task:** run commands from `E:\Projects\ADPulse\adpulse`; tests with `uv run pytest <path> -v`; lint with `uv run ruff check`; conventional commit messages; no `Co-Authored-By` trailer; nothing from a real domain in fixtures.
+**Conventions for every task:** run commands from `C:\ADPulse\adpulse` on DC01; tests with `uv run pytest <path> -v`; lint with `uv run ruff check`; conventional commit messages; no `Co-Authored-By` trailer; nothing from a real domain in fixtures.
 
 ---
 

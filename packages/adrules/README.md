@@ -10,7 +10,7 @@ security descriptors.**
 
 | Module | Purpose |
 |--------|---------|
-| `catalog/` | One YAML (metadata, bilingual texts, mappings) + one Python `evaluate(snapshot) -> CheckResult` per check (`del_01.yaml` / `del_01.py`). |
+| `catalog/` | One YAML (metadata, bilingual texts, mappings) + one Python `evaluate(snapshot, meta, ctx) -> list[Finding]` per check (`pwd_01.yaml` / `pwd_01.py`); the runner wraps it in a `CheckResult`. |
 | `finding/` | The Finding model — the central domain object. Key = (rule_id, object_id, subject_id); `subject_id` is the trustee for ACL checks, else null. |
 | `prioritize/` | Documented factor model + labelled heuristic priority score. |
 | `graph/` | Evidence-backed graph; edges carry evidence, preconditions and confidence. |

@@ -1,6 +1,6 @@
 # ADPulse نبض — design specification
 
-Date: 2026-09-22 · Status: approved · Amended 2026-09-23 (D21–D30) · Owner: Naif Al Anazi
+Date: 2026-09-22 · Status: approved · Amended 2026-09-23/24 (D21–D31) · Owner: Naif Al Anazi
 
 ## 1. Purpose
 
@@ -30,6 +30,15 @@ Cutting scope always cuts the slice, never the core's quality.
 | Lab | Reusable lab tooling | One polished scenario |
 | Reports | Reusable report engine | One polished EN/AR report |
 | Scheduler | Future | Optional/basic |
+
+### MVP-1 first (amended 2026-09-24, D31)
+
+The first thing built and demonstrated is MVP-1: three password-policy checks (PWD-01 minimum length,
+PWD-02 complexity, PWD-04 lockout) read from the domain object as a standard user, run end to end by
+`adrules scan`, producing a `ScanResult` and one static HTML report (EN/AR, printable), with new / open /
+resolved between scans. Everything in the table above beyond that arrives as numbered increments, each
+ending in a working rescan (order in `PROJECT-STATUS.md`). No component in sections 4.1–4.4 is built
+before the increment that needs it.
 
 ## 3. Pipeline
 
@@ -65,9 +74,10 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
 
 - **Catalog:** one YAML per check (id, category, severity, privilege_required, title_en/ar,
   why_it_matters_en/ar, remediation_en/ar, control_mappings.nca_ecc_2_2024[], attack_techniques[],
-  matches_pingcastle_rule, evidence_source) and one `evaluate(snapshot) -> list[Finding]`. Statuses:
+  matches_pingcastle_rule, evidence_source) and one `evaluate(snapshot, meta, ctx) -> list[Finding]`. Statuses:
   `fail | pass | not_assessed | needs_elevated`. The long-term catalog is `docs/research/ad-check-catalog.md`.
-- **Finding model:** a rule returns a `CheckResult` (status, reason, confidence, findings[]). Finding:
+- **Finding model:** a rule returns `list[Finding]`; the runner wraps it in a `CheckResult` (status, reason,
+  confidence, findings[]) (D31). Finding:
   id, rule_id, title, category, severity, status, affected_object, affected_object_type, subject_id,
   evidence, evidence_source, why_it_matters, remediation, privilege_required, exposure, blast_radius,
   control_mappings, attack_techniques, related_paths, first_seen, last_seen, resolved_at, confidence,

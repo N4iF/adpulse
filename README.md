@@ -52,7 +52,7 @@ docs/               architecture, setup, handoff, build log, research, specs
 
 ## Start here
 
-1. `PROJECT-STATUS.md` — phase, next actions, scope boundary.
+1. `PROJECT-STATUS.md` — phase, next actions, scope (MVP-1 first: three password-policy checks end to end).
 2. `docs/architecture.md` — snapshot, Finding, coverage, Tier 0, the derived-field dictionary.
 3. `docs/research/ad-check-catalog.md` — the long-term catalog and the 12 Tier A checks.
 4. `CONTRIBUTING.md` — how to add a check, tests first.

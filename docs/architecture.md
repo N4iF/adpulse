@@ -34,6 +34,11 @@
              Applications (API, dashboard, PDF, CLI)
 ```
 
+**MVP-1 builds only this path (D31):** collector (domain object over LDAPS, no security descriptors, no
+SYSVOL) → snapshot → rule engine (PWD-01/02/04) → Finding → lifecycle (new/open/resolved) → one static
+HTML report. Control mapping as a view, the path graph and the other collectors are later increments;
+the interfaces above stay the same so they plug in without rework.
+
 Collectors produce facts. The engine judges. Rules never read `raw`; they read only normalized data —
 `derived` fields and the parsed `security_descriptor` — so a new collector (a PingCastle XML or
 SharpHound JSON importer) needs a new adapter and zero rule changes.
@@ -119,6 +124,8 @@ ACL checks read `security_descriptor.aces[]`. Every other Tier A input is one of
 | `member_of` | list[object_id] | user, group, computer | `memberOf` + the `primaryGroupID` group | directory_objects | Tier 0 |
 | `machine_account_quota` | int | domain | `ms-DS-MachineAccountQuota` | directory_objects | DEL-05 |
 | `min_password_length` | int | domain | `minPwdLength` | directory_objects | PWD-01 |
+| `password_complexity` | bool | domain | `pwdProperties` & 0x1 | directory_objects | PWD-02 |
+| `lockout_threshold` | int | domain | `lockoutThreshold` (0 = never locks) | directory_objects | PWD-04 |
 | `gpo_name_guid` | str | gpo | `cn` `{…}` — the SYSVOL folder name (not the objectGUID) | directory_objects | GPO-01 |
 | `gpp_cpassword_files` | list[str] | gpo | SYSVOL `Policies/{gpo_name_guid}/**/*.xml` with a non-empty `cpassword` (relative paths only) | gpo_files | GPO-01 |
 
@@ -133,31 +140,50 @@ collector; raw SDDL except as evidence for an ACL finding. Fixtures come from th
 
 ## Finding and CheckResult (adrules.finding)
 
-A rule returns one `CheckResult`: `rule_id`, `status` (`fail | pass | not_assessed | needs_elevated`),
-`reason` (for not_assessed / needs_elevated), `confidence`, and `findings[]`. Each Finding is one failure
-on one object:
+A rule's `evaluate(snapshot, meta, ctx)` returns `list[Finding]`; the runner applies the coverage gate
+and wraps the result in a `CheckResult`: `rule_id`, `status` (`fail | pass | not_assessed |
+needs_elevated`), `reason`, `confidence`, `findings[]`. Each Finding is one failure on one object.
+
+**Finding v1 (frozen for MVP-1):**
 
 ```
-id, rule_id, title, category, severity, status
-affected_object (object_id), affected_object_type, subject_id (trustee object_id for ACL checks, else null)
+rule_id, category, severity
+title, why_it_matters (management sentence), remediation   — each {en, ar}
+affected_object (object_id), affected_object_type, affected_name
+subject_id, subject_name   (trustee for ACL checks, else null)
 evidence, evidence_source
-why_it_matters (management sentence), remediation
-privilege_required, exposure, blast_radius
-control_mappings, attack_techniques, related_paths
-first_seen, last_seen, resolved_at
-confidence, assessment_limitations
+control_mappings, attack_techniques, confidence
 ```
 
-Finding key = `(rule_id, object_id, subject_id)`. ACL-01 with two trustees holding DCSync rights yields
-two findings on the domain object. One object drives dashboard, PDF, control-evidence view, path graph,
-history, AI explanation and API.
+Lifecycle state and first/last seen live in `ScanResult`, not on the Finding. Later increments may add
+optional fields (exposure, blast_radius, related_paths, priority) without breaking v1.
+
+Finding key = `(rule_id, object_id, subject_id)`. One object drives the report, the control view, history
+and, later, the app and API.
+
+## ScanResult (adrules.scan)
+
+What `adrules scan` writes (`snapshots/<id>.scan.json`) and what the HTML report renders:
+
+```
+schema_version
+snapshot: {id, collected_at, domain, mode}
+coverage
+results: [CheckResult]
+lifecycle: [{key, state: new | open | resolved, not_reassessed}]
+previous_scan_id
+```
+
+A finding is `resolved` only when its rule was actually re-assessed (pass or fail) in the new scan; if the
+rule could not run, the finding stays `open` with `not_reassessed: true`, so a failed connection can never
+show a false "resolved".
 
 ## Rules (adrules.catalog)
 
 One YAML per check (`del_01.yaml`: id, category, severity, privilege_required, requires_coverage,
 title_en/ar, why_it_matters_en/ar, remediation_en/ar, control_mappings.nca_ecc_2_2024[],
 attack_techniques[], matches_pingcastle_rule, evidence_source) and one Python module (`del_01.py`) with
-`evaluate(snapshot) -> CheckResult`. Thresholds (e.g. KRB-01 max krbtgt age, default 180 days) are
+`evaluate(snapshot, meta, ctx) -> list[Finding]`. Thresholds (e.g. PWD-01 minimum length, default 12) are
 parameters with documented defaults. Tests: positive and negative mini-snapshots per rule.
 
 ## Prioritization (adrules.prioritize)
@@ -196,8 +222,9 @@ organizational policy/process compliance is not assessed." ADPulse never claims 
 
 ## Lifecycle
 
-Snapshots are diffed. A finding keyed (rule_id, object_id, subject_id) is `new` when first seen, `open`
-while it persists, `resolved` when absent after being present, `regressed` when it returns. "Continuous"
+Scans are diffed. A finding keyed (rule_id, object_id, subject_id) is `new` when first seen, `open`
+while it persists, `resolved` when absent after being present (and its rule re-assessed). `regressed`
+(it returns after being resolved) comes with increment 6. "Continuous"
 means continuous periodic assessment, not a resident agent.
 
 ## Assessment modes
