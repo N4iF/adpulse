@@ -1,80 +1,82 @@
-# lab — deliberately misconfigured Active Directory on Hyper-V
+# lab — a deliberately misconfigured Active Directory on Hyper-V (one VM)
 
-Generic, reusable lab builders for developing and demonstrating ADPulse. Never use these scripts against
-a real domain; they create intentional weaknesses. Steps marked **[admin]** need an elevated PowerShell
-on the host; an AI session cannot do them.
+Reusable lab for developing and demonstrating ADPulse. Never use these scripts against a real domain;
+they create intentional weaknesses. Steps marked **[admin]** need an elevated PowerShell on the host.
 
-## Topology
+## Topology (Phase 1: one domain controller, nothing else)
 
 ```
 Hyper-V Internal switch "LABNET" 10.10.10.0/24
   Host   10.10.10.1    development box (collector, tests, apps)
-  DC01   10.10.10.10   corp.local — AD DS, DNS           Windows Server 2022 eval, 2 vCPU, 4 GB, 60 GB
-  SRV01  10.10.10.20   member — AD CS enterprise CA, SMB  Windows Server 2022 eval, 2 vCPU, 4 GB, 60 GB
-  WS01   10.10.10.50   member — Win11 client (optional)   Windows 11 Enterprise eval, 2 vCPU, 4 GB, 60 GB
+  DC01   10.10.10.10   dc01.corp.local — AD DS, DNS, LDAPS   Windows Server 2022 eval, 2 vCPU, 4 GB, 60 GB
 ```
 
-**Lite lab (16 GB laptop):** `DC01` only, exported from the *seeded* full lab (`Export-LiteLab.ps1`).
-Certificate templates and enrollment services live in the Configuration NC that DC01 holds, so PKI-01 is
-still assessable; CA-host checks (PKI-05/06/09, `ca_registry` coverage) report `not_assessed`.
+The same VM is the "lite lab": export the `seeded` checkpoint and import it on the laptop. Extra VMs
+(a client, an AD CS server), scale seeding (BadBlood) and vulnerable-AD are Tier B.
 
-## Prerequisites
+## Build (about 45 minutes once, then minutes from checkpoints)
 
-| Step | Who |
-|---|---|
-| Enable Hyper-V; create the Internal switch `LABNET`; give the host adapter 10.10.10.1/24. | [admin] |
-| Download Windows Server 2022 and Windows 11 Enterprise evaluation ISOs into `lab/LabSources/ISOs/` (git-ignored). | Naif |
-| Install the AutomatedLab PowerShell module on the host. | [admin] |
-| LDAPS: DC01 needs a server certificate. `01-Build-Lab.ps1` installs an enterprise root CA on SRV01; DC01 auto-enrolls a Domain Controller certificate and LDAPS (636) starts working. Export DC01 for the lite lab only after that enrollment. | script |
-| Standard-user account `adpulse.reader` (member of Domain Users only) — the collector's identity in standard mode. `04-Seed-Extras.ps1` creates it. | script |
-| Host name resolution: add `10.10.10.10 dc01.corp.local corp.local` to the hosts file, or point the LABNET adapter's DNS at DC01. The collector must use the DNS name (`dc01.corp.local`), not the IP — LDAPS validates the hostname. | [admin] |
-| `.env` at the repo root (git-ignored): `ADPULSE_DC=dc01.corp.local`, `ADPULSE_DOMAIN=corp.local`, `ADPULSE_USER=adpulse.reader@corp.local`, `ADPULSE_PASSWORD=…`, `ADPULSE_MODE=standard`. | Naif |
-
-## Build sequence (run from the host; in-VM steps use PowerShell Direct)
-
-| Script | Purpose | Result |
-|--------|---------|--------|
-| `01-Build-Lab.ps1` | AutomatedLab: VMs, forest `corp.local`, AD CS enterprise root on SRV01, DC certificate enrollment | checkpoint `clean` |
-| `02-BadBlood.ps1` | thousands of realistic objects + randomized ACLs (scale) | — |
-| `03-VulnAD.ps1` | vulnerable-AD `Invoke-VulnAD` | — |
-| `04-Seed-Extras.ps1` | the Tier A seeds below, the designed path, `adpulse.reader`; driven by `expected-findings.yaml` | checkpoint `seeded` |
-| `05-Drift.ps1` | between scans: add an SPN, grant a bad ACE, disable an account, fix one finding | — |
-| `Fix-<check>.ps1` | remediation per check (`Fix-ACL-03.ps1` is the on-stage fix) | — |
-| `Reset-Lab.ps1` | restore `seeded` in under 2 minutes | — |
-| `Export-LiteLab.ps1` | export DC01 `seeded` for the laptop | — |
-
-## Tier A seeds (what `04-Seed-Extras.ps1` must create)
-
-| Check | Seed | Notes |
+| Step | How | Who |
 |---|---|---|
-| DEL-01 | `TrustedForDelegation` on SRV01 | non-DC computer |
-| DEL-05 | leave `ms-DS-MachineAccountQuota` at the default 10 | fires on any default domain |
-| ACL-01 | DCSync rights (both replication extended rights) for `svc_backup` on the domain head | **not** helpdesk, so the designed path stays helpdesk's only route |
-| ACL-03 | `GenericWrite` for group `helpdesk` on user `svc_sql` | the designed path edge |
-| PRV-04 | `svc_sql` has an SPN and is a member of Domain Admins | krbtgt excluded by rule |
-| KRB-01 | krbtgt password never rotated since forest creation | `pwdLastSet` cannot be back-dated; for a fresh lab the demo passes `--krbtgt-max-age-days` low enough, and the report states the threshold used |
-| KRB-02 | `DONT_REQ_PREAUTH` on `svc_legacy` | — |
-| KRB-03 | SPNs on `svc_sql`, `svc_web`, `svc_backup` | — |
-| PKI-01 | template `UserAuthLab`: enrollee supplies subject, Client Authentication EKU, no manager approval, 0 signatures, published on the CA, Enroll for Domain Users | — |
-| GPO-01 | a legacy `Groups.xml` with a `cpassword` under a test GPO's SYSVOL folder | value is never read by the collector |
-| ACC-01 | `PASSWD_NOTREQD` on enabled user `temp.intern` | built-in Guest excluded by rule |
-| ACC-04 | `description` = "temp password: …" on user `contractor1` | evidence = attribute name only |
+| 1. Hyper-V switch | `New-VMSwitch -Name LABNET -SwitchType Internal`; give the host adapter 10.10.10.1/24; hosts file: `10.10.10.10 dc01.corp.local corp.local` | [admin] |
+| 2. ISO | Windows Server 2022 evaluation (Desktop Experience) from the Microsoft Evaluation Center into `lab/ISOs/` (git-ignored) | Naif |
+| 3. VM + OS | `New-VM DC01 -Generation 2 -MemoryStartupBytes 4GB -SwitchName LABNET`, attach ISO, install Windows by hand (~20 min), set the local Administrator password | [admin] |
+| 4. Promote | copy `Install-DC.ps1` in (PowerShell Direct: `Copy-VMFile`), run it inside DC01: rename, static IP 10.10.10.10, `Install-ADDSForest -DomainName corp.local`, reboot | script |
+| 5. Checkpoint | `Checkpoint-VM DC01 -SnapshotName clean` | [admin] |
+| 6. Seed | run `Seed.ps1` inside DC01 (`Invoke-Command -VMName DC01`) — see table below | script |
+| 7. Checkpoint | `Checkpoint-VM DC01 -SnapshotName seeded` | [admin] |
 
-**Designed path (demo):** `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`. Removing the
-GenericWrite ACE (`Fix-ACL-03.ps1`) makes ACL-03 `resolved` and the path disappear. No other seed may give
+`Reset.ps1` = `Restore-VMSnapshot DC01 -Name seeded` (under 2 minutes). `Export-Lab.ps1` exports DC01
+for the laptop.
+
+## What `Seed.ps1` creates
+
+| Item | Detail |
+|---|---|
+| LDAPS | self-signed certificate for `dc01.corp.local` in the DC's machine store (`New-SelfSignedCertificate -DnsName dc01.corp.local`); LDAPS on 636 starts working on restart of the NTDS service. The collector trusts this certificate explicitly (`ADPULSE_CA_CERT` or `--insecure-lab`). |
+| `adpulse.reader` | member of Domain Users only — the collector's identity in standard mode |
+| OU `Lab`, groups `helpdesk`, users `svc_sql`, `svc_web`, `svc_backup`, `svc_legacy`, `temp.intern`, `contractor1`, `hd.user1` (member of helpdesk) | the cast |
+| DEL-01 | `TrustedForDelegation` on computer account `APP01` (a computer object only; no VM needed) |
+| DEL-05 | `ms-DS-MachineAccountQuota` left at the default 10 |
+| ACL-01 | both replication extended rights for `svc_backup` on the domain head (**not** helpdesk) |
+| ACL-03 | `GenericWrite` for `helpdesk` on `svc_sql` — the designed path edge |
+| PRV-04 | `svc_sql` has an SPN and is a member of Domain Admins |
+| KRB-01 | krbtgt never rotated since forest creation; `pwdLastSet` cannot be back-dated, so on a fresh lab the demo runs with `--krbtgt-max-age-days` low enough and the report states the threshold used |
+| KRB-02 | `DONT_REQ_PREAUTH` on `svc_legacy` |
+| KRB-03 | SPNs on `svc_sql`, `svc_web`, `svc_backup` |
+| GPO-01 | test GPO `Lab-Legacy` with a `Groups.xml` containing a `cpassword` in its SYSVOL folder (the collector never reads the value) |
+| ACC-01 | `PASSWD_NOTREQD` on enabled user `temp.intern` |
+| ACC-04 | `description` = "temp password: …" on `contractor1` |
+| PWD-01 | `Set-ADDefaultDomainPasswordPolicy -MinPasswordLength 6` |
+
+**Designed path (demo):** `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`. `Fix-ACL-03.ps1`
+removes the GenericWrite ACE, ACL-03 becomes `resolved` and the path disappears. No other seed may give
 `helpdesk` a route to Tier 0.
 
-**Clean baseline:** the `clean` checkpoint must produce zero Tier A findings except DEL-05 (default quota)
-and possibly KRB-01 (threshold-dependent); both are documented in `expected-findings.yaml`.
+**Clean baseline:** the `clean` checkpoint must produce zero Tier A findings except DEL-05 (default
+quota) and possibly KRB-01 (threshold-dependent); both are documented in `expected-findings.yaml`.
 
 `expected-findings.yaml` = expected state → actual state → finding: the ground-truth dataset for the lab
 acceptance criteria (100% detection of seeded findings, 0 unexpected findings on the clean baseline, every
 result with reproducible evidence, every remediation causing the expected lifecycle transition).
 
-## Rejected alternatives
+## Scripts (to be written in Phase 1)
 
-GOAD / Ludus (no Hyper-V support; Linux-only tooling), DetectionLab (unmaintained), VMware (not needed).
+`Install-DC.ps1`, `Seed.ps1`, `Drift.ps1` (add an SPN, grant a bad ACE, disable an account, fix one
+finding), `Fix-<check>.ps1` for each of the 12 checks, `Reset.ps1`, `Export-Lab.ps1`.
 
-## Status
+## Host `.env` (git-ignored)
 
-Scripts are not written yet (Phase 1). This README is the contract they implement.
+```
+ADPULSE_DC=dc01.corp.local
+ADPULSE_DOMAIN=corp.local
+ADPULSE_USER=adpulse.reader@corp.local
+ADPULSE_PASSWORD=...
+ADPULSE_MODE=standard
+ADPULSE_CA_CERT=lab/dc01-ldaps.cer   # exported self-signed certificate
+```
+
+## Rejected for Phase 1
+
+AutomatedLab (heavy module for one VM), BadBlood and vulnerable-AD (noise we don't need for 12 checks),
+GOAD/Ludus (no Hyper-V), a second VM with AD CS (only PKI-01 needs it — Tier B).

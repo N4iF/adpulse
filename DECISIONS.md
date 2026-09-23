@@ -69,6 +69,11 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   packages; pytest `--import-mode=importlib`; `uv.lock` committed; rule files use snake_case names.
 - **D27 Catalog count.** The research catalog holds 104 checks (90 standard-user, 10 elevated, 4 mixed),
   not 79 as first stated.
+- **D29 Scope cut (Naif, 2026-09-23): no AD CS in Phase 1.** PKI-01 moves to Tier B; PWD-01 (weak
+  minimum password length) is the twelfth Tier A check. The lab is a single DC (`DC01`) installed by hand
+  once, then scripted (`Install-DC.ps1`, `Seed.ps1`); LDAPS uses a self-signed certificate on DC01; no
+  AutomatedLab, BadBlood, vulnerable-AD, SRV01 or WS01 in Phase 1. Why: one of twelve checks does not
+  justify a second VM, a CA and template seeding; "build the right project, not a complicated one".
 - **D28 SMB library.** `smbprotocol` instead of `impacket` for SYSVOL reads. Why: Windows Defender
   quarantines impacket's DCOM module on install (os error 225), and impacket is an offensive toolkit we
   only needed for file reads; `smbprotocol` is pure Python, maintained, supports NTLM/Kerberos, and is not

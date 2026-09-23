@@ -23,6 +23,8 @@ Read this file fully before doing anything.
   of engineering milestones); never organizer rules or their interpretation, organizer questions or
   answers, team composition, registration logistics, risks or tactics.
 - **Never scan a real domain.** Lab (`corp.local` on Hyper-V) only.
+- **Keep it simple.** The smallest structure that meets the goal; no extra VMs, services, libraries or
+  ceremony without a Tier A reason (D29).
 - **Data minimization:** store evidence needed to explain a finding, never secrets unnecessary to explain
   it (no GPP password values, no decrypted secrets, redact password-like strings, no credentials in fixtures).
 - **Terminology:** "ECC technical evidence / alignment" (never "ECC compliance" or "compliance score");

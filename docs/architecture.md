@@ -118,13 +118,12 @@ ACL checks read `security_descriptor.aces[]`. Every other Tier A input is one of
 | `password_in_text_attrs` | list[str] | user | attribute names that matched | directory_objects | ACC-04 |
 | `member_of` | list[object_id] | user, group, computer | `memberOf` + the `primaryGroupID` group | directory_objects | Tier 0 |
 | `machine_account_quota` | int | domain | `ms-DS-MachineAccountQuota` | directory_objects | DEL-05 |
+| `min_password_length` | int | domain | `minPwdLength` | directory_objects | PWD-01 |
 | `gpo_name_guid` | str | gpo | `cn` `{…}` — the SYSVOL folder name (not the objectGUID) | directory_objects | GPO-01 |
 | `gpp_cpassword_files` | list[str] | gpo | SYSVOL `Policies/{gpo_name_guid}/**/*.xml` with a non-empty `cpassword` (relative paths only) | gpo_files | GPO-01 |
-| `enrollee_supplies_subject` | bool | cert_template | `msPKI-Certificate-Name-Flag` & 0x1 | adcs | PKI-01 |
-| `client_auth_eku` | bool | cert_template | `pKIExtendedKeyUsage` contains 1.3.6.1.5.5.7.3.2, 1.3.6.1.4.1.311.20.2.2, 1.3.6.1.5.2.3.4 or 2.5.29.37.0, or is empty | adcs | PKI-01 |
-| `requires_manager_approval` | bool | cert_template | `msPKI-Enrollment-Flag` & 0x2 | adcs | PKI-01 |
-| `authorized_signatures` | int | cert_template | `msPKI-RA-Signature` (0 when absent) | adcs | PKI-01 |
-| `published_on_cas` | list[object_id] | cert_template | listed in `certificateTemplates` of a `ca` object | adcs | PKI-01 |
+
+Tier B (PKI-01, needs AD CS): `enrollee_supplies_subject`, `client_auth_eku`, `requires_manager_approval`,
+`authorized_signatures`, `published_on_cas` on `cert_template` objects (coverage `adcs`).
 
 ### Never stored (data minimization)
 

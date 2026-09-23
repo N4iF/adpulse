@@ -101,10 +101,11 @@ the machine.
 
 ## 5. Lab
 
-Hyper-V Internal switch `LABNET` 10.10.10.0/24, domain `corp.local`, Windows Server 2022 evaluation:
-DC01 (AD DS, DNS), SRV01 (AD CS), optional WS01. Built and seeded from scripts (AutomatedLab, BadBlood,
-vulnerable-AD, `04-Seed-Extras.ps1`) with checkpoints `clean` and `seeded`; `05-Drift.ps1` changes state
-between scans; `Fix-<check>.ps1` remediations; `expected-findings.yaml` is the ground-truth dataset.
+Hyper-V Internal switch `LABNET` 10.10.10.0/24, domain `corp.local`, one Windows Server 2022 evaluation
+VM `DC01` (AD DS, DNS, self-signed LDAPS certificate). OS installed by hand once; then `Install-DC.ps1`,
+`Seed.ps1` (the 12 Tier A seeds, the designed path, the `adpulse.reader` account), checkpoints `clean` and
+`seeded`; `Drift.ps1` changes state between scans; `Fix-<check>.ps1` remediations;
+`expected-findings.yaml` is the ground-truth dataset. Extra VMs, AD CS and scale seeding are Tier B.
 See `lab/README.md`.
 
 ## 6. Verification and validation
@@ -139,9 +140,10 @@ no `Co-Authored-By` trailers. Versions verified 2026-09-22: Node 24 LTS, React 1
 
 - **Tier A (first slice core):** connect (standard user) · snapshot · 12 checks · evidence · ECC evidence
   for 2-2-3-x · findings view · one derived path · EN/AR report · rescan · resolved/regressed.
-  Checks: DEL-01, DEL-05, ACL-01, ACL-03, PRV-04, KRB-01, KRB-02, KRB-03, PKI-01, GPO-01, ACC-01, ACC-04.
-- **Tier B:** PWD-01/02/04, PRV-01/02/06, ACC-09, STL-01/02, OS-01, Tier 0 closure, more ADCS/GPO,
-  RTL polishing, trend visualizations, remediation scripts, basic scheduler.
+  Checks: DEL-01, DEL-05, ACL-01, ACL-03, PRV-04, KRB-01, KRB-02, KRB-03, GPO-01, ACC-01, ACC-04, PWD-01
+  (amended 2026-09-23, D29: PKI-01 → Tier B; single-DC lab).
+- **Tier B:** PKI-01 (AD CS), PWD-02/04, PRV-01/02/06, ACC-09, STL-01/02, OS-01, Tier 0 closure, more
+  GPO checks, RTL polishing, trend visualizations, basic scheduler, lab scale and extra VMs.
 - **Tier C:** the full 104-check catalog and beyond, multiple collectors, advanced ADCS,
   multi-domain/forest, continuous scheduling, integrations, AI enrichment, historical analytics,
   category-scoring research, enterprise auth, RBAC.

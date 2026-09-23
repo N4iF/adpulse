@@ -14,7 +14,6 @@ Steps marked **[admin]** need an elevated prompt; an AI session cannot do them.
 | Node.js | **24 LTS** (Node 25 is EOL) | `winget install OpenJS.NodeJS.LTS` or `fnm install 24` |
 | pnpm | 9+ | `npm i -g pnpm` |
 | Hyper-V | Windows feature | `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All` **[admin]** |
-| AutomatedLab | PowerShell module | `Install-Module AutomatedLab` **[admin]** (lab builds only) |
 | Playwright browsers (for PDF in apps) | — | `pnpm dlx playwright install chromium` (app repos only) |
 
 ## 2. Clone
@@ -36,10 +35,9 @@ uv run ruff check
 
 ## 4. Lab
 
-See `lab/README.md` (prerequisites, LDAPS certificate, the `adpulse.reader` account, ISO location).
-Summary: Hyper-V Internal switch `LABNET` 10.10.10.0/24 (host 10.10.10.1), `DC01` 10.10.10.10
-(`corp.local`), `SRV01` (AD CS) and optional `WS01`. On the laptop import only the seeded `DC01`
-(`Export-LiteLab.ps1`).
+See `lab/README.md`. Summary: Hyper-V Internal switch `LABNET` 10.10.10.0/24 (host 10.10.10.1), one VM
+`DC01` 10.10.10.10 (`corp.local`, self-signed LDAPS certificate). On the laptop import the exported
+`seeded` checkpoint.
 
 Host name resolution for the lab: add to `C:\Windows\System32\drivers\etc\hosts`
 ```
@@ -56,6 +54,7 @@ ADPULSE_DOMAIN=corp.local
 ADPULSE_USER=adpulse.reader@corp.local
 ADPULSE_PASSWORD=...
 ADPULSE_MODE=standard             # or privileged
+ADPULSE_CA_CERT=lab/dc01-ldaps.cer # the lab DC's self-signed certificate
 ```
 
 ## 6. Before you start working
