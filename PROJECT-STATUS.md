@@ -5,7 +5,8 @@ non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — engine + lab.** The engine (this repo) and the Hyper-V lab are being built now. A first
+**Phase 1 — engine + lab.** The engine (this repo) and the VMware lab are being built now; development
+runs inside the lab DC (D30). A first
 product slice (dashboard, report, API) will be built on the engine in a separate repository from
 15 Oct 2026; until then, application work exists only as documents.
 
@@ -27,15 +28,16 @@ elevated prompt / downloads.
 | 1 | `uv sync` (installs both packages editable), commit `uv.lock`; `uv run pytest` exits 5 ("no tests collected") until the first test exists — that is expected; `uv run ruff check`. | [agent] |
 | 2 | Freeze `adsnap.model` (Snapshot, objects[] with `raw`/`derived`/`security_descriptor`, coverage, errors) and a `make_snapshot()` test builder — tests first. See `docs/architecture.md` → Derived-field dictionary. | [agent] |
 | 3 | Freeze `adrules.finding` (Finding, CheckResult; key = rule_id, object_id, subject_id) — tests first. | [agent] |
-| 4 | Download the Windows Server 2022 evaluation ISO; install one VM `DC01` by hand (20 min); run `lab/Install-DC.ps1` (static IP, forest `corp.local`) → checkpoint `clean`; run `lab/Seed.ps1` (the 12 seeds, the designed path, `adpulse.reader`, self-signed LDAPS certificate) → checkpoint `seeded`. See `lab/README.md`. | [Naif, admin] |
+| 4 | VMware lab: `DC01` + `SRV01` (Windows Server 2022, NAT network); install dev tools and Claude Code on DC01, clone to `C:\ADPulse\` (`docs/SETUP.md`); snapshot `clean`. From then on, sessions run inside DC01 (D30). | [Naif, admin] |
+| 4b | First session inside DC01: fill in "Lab inventory" in `lab/README.md`; write `lab/Seed.ps1` per the plan (Task 18) and run it; Naif takes snapshot `seeded`. | [agent on DC01] |
 | 5 | Collector against DC01 as `adpulse.reader`: users, computers, groups, domain head, GPOs (+SYSVOL GPP files); security descriptors via SD-flags control 0x07; `coverage` and `errors` recorded. Fixture recorded from the lab (sanitized). | [agent after 4] |
 | 6 | First 3 rules with tests: DEL-01, KRB-03, ACL-01. `adrules evaluate snapshot.json` prints findings JSON. This is the engine vertical slice. | [agent] |
 | 7 | Remaining 9 Tier A rules; evidence-backed graph with the designed path; controls-evidence module (ECC 2-2-3-x); `lab/expected-findings.yaml` truth table passing. | [agent + Naif for lab seeding] |
 
 ## Blockers / open questions
 
-- Lab not built yet (needs the ISO and admin rights on the desktop). Scope deliberately minimal: one DC,
-  no AD CS, no scale seeding (D29).
+- Lab being set up by Naif in VMware (DC01 + SRV01). Sessions move inside DC01 once it has the dev
+  tools (D30). Scope deliberately minimal: no AD CS, no scale seeding (D29).
 - `impacket` is quarantined by Windows Defender on install; replaced by `smbprotocol` (D28). If any
   future dependency trips Defender, prefer replacing it over adding an exclusion.
 - Unprivileged DACL read via SD-flags 0x07 is an inference from MS-ADTS; confirm empirically in step 5.

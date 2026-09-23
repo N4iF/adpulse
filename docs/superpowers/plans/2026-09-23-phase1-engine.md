@@ -4,9 +4,9 @@
 
 **Goal:** Collect a snapshot of a lab Active Directory as a standard user, evaluate the 12 Tier A checks into evidence-backed findings, derive one potential privilege-escalation path, map findings to ECC 2-2-3-x technical evidence, and diff two snapshots into new / open / resolved / regressed — all from the CLI, all test-first.
 
-**Architecture:** `adsnap` (collector + versioned snapshot schema; produces facts) and `adrules` (Finding model, Tier 0 v1, YAML+Python rule catalog, graph, controls, lifecycle; judges). Rules read only `derived` fields and the parsed `security_descriptor`, never `raw`. One `objects[]` list holds every AD object; identity is objectGUID. The lab is one Hyper-V VM (`DC01`) seeded by a script; `expected-findings.yaml` is the ground truth.
+**Architecture:** `adsnap` (collector + versioned snapshot schema; produces facts) and `adrules` (Finding model, Tier 0 v1, YAML+Python rule catalog, graph, controls, lifecycle; judges). Rules read only `derived` fields and the parsed `security_descriptor`, never `raw`. One `objects[]` list holds every AD object; identity is objectGUID. The lab is VMware (`DC01` + member server `SRV01`); sessions run inside DC01 and a script seeds it; `expected-findings.yaml` is the ground truth.
 
-**Tech Stack:** Python 3.12, uv workspace, pydantic 2, ldap3 2.9, winacl 0.1.9, smbprotocol 1.17, networkx 3, PyYAML, typer, pytest, ruff. PowerShell 5.1 inside the VM (via PowerShell Direct). Windows Server 2022 evaluation.
+**Tech Stack:** Python 3.12, uv workspace, pydantic 2, ldap3 2.9, winacl 0.1.9, smbprotocol 1.17, networkx 3, PyYAML, typer, pytest, ruff. PowerShell 5.1 inside DC01 (VMware, where sessions run, D30) (via PowerShell Direct). Windows Server 2022 evaluation.
 
 **Spec:** `docs/superpowers/specs/2026-09-22-adpulse-design.md` (amended D21–D29). Contracts: `docs/architecture.md` (derived-field dictionary, coverage, Tier 0 v1), `docs/research/ad-check-catalog.md` → "Tier A", `lab/README.md`.
 
@@ -37,7 +37,7 @@ packages/adrules/src/adrules/
   lifecycle.py   diff(previous, current) -> new/open/resolved/regressed (Task 17)
   cli.py         `adrules evaluate`, `adrules paths` (Task 10, extended in 15)
 packages/adrules/tests/           test_finding.py, test_tier0.py, test_catalog.py, catalog/test_<rule>.py, test_graph.py, test_controls.py, test_lifecycle.py, test_lab_truth_table.py
-lab/                              Install-DC.ps1, Seed.ps1, Fix-*.ps1, Drift.ps1, Reset.ps1, Export-Lab.ps1, expected-findings.yaml (Task 18)
+lab/                              Install-DC.ps1, Seed.ps1, Fix-*.ps1, Drift.ps1, expected-findings.yaml (Task 18; run inside DC01)
 ```
 
 ---
@@ -3241,12 +3241,16 @@ git commit -m "feat(adrules): snapshot-to-snapshot lifecycle diff"
 ---
 ### Task 18: Lab (single DC) and the ground-truth truth table
 
-The lab is one Hyper-V VM. The scripts are written and run by Naif on the desktop (they need admin rights
-and a running DC); an AI session cannot execute them. The engine side of this task is the truth-table test
-that reads `lab/expected-findings.yaml` and asserts the engine reproduces it against a recorded fixture.
+The lab is VMware: `DC01` (domain controller, where this session runs, D30) and `SRV01` (member server).
+The scripts run in an elevated PowerShell **inside DC01**; snapshots are taken and reverted by Naif on the
+host (commit and push before any revert). The DEL-01 target is `SRV01` when it is joined to the domain;
+the `APP01` computer object in the steps below is the fallback when there is no second server — use
+whichever the "Lab inventory" in `lab/README.md` lists, and make `expected-findings.yaml` match. The engine
+side of this task is the truth-table test that reads `lab/expected-findings.yaml` and asserts the engine
+reproduces it against a recorded fixture.
 
 **Files:**
-- Create: `lab/Install-DC.ps1`, `lab/Seed.ps1`, `lab/Fix-ACL-03.ps1`, `lab/Drift.ps1`, `lab/Reset.ps1`, `lab/Export-Lab.ps1`, `lab/expected-findings.yaml`
+- Create: `lab/Install-DC.ps1`, `lab/Seed.ps1`, `lab/Fix-ACL-03.ps1`, `lab/Drift.ps1`, `lab/expected-findings.yaml`
 - Create: `packages/adrules/tests/test_lab_truth_table.py`, `packages/adrules/tests/fixtures/lab-seeded.json` (recorded in Task 14 step 6, sanitized)
 
 - [ ] **Step 1: Write `lab/expected-findings.yaml`** (the ground truth; one row per seeded item)
@@ -3399,8 +3403,8 @@ Restart-Service NTDS -Force
 dsacls (Get-ADUser svc_sql).DistinguishedName /R "CORP\helpdesk"
 ```
 
-`lab/Reset.ps1`: `Restore-VMSnapshot -VMName DC01 -Name seeded -Confirm:$false` (run on the host).
-`lab/Export-Lab.ps1`: `Export-VM -Name DC01 -Path D:\ADPulseLabExport` (import on the laptop).
+Reset: Naif reverts DC01 (and SRV01) to snapshot `seeded` in VMware on the host, after this session has
+pushed; then `git pull`. Laptop: copy the VM folders (or export to OVF) and open them in VMware.
 `lab/Drift.ps1`: grant then remove one ACE and toggle one account, for the lifecycle demo.
 
 - [ ] **Step 4: Record the fixture (Naif, once the lab is seeded)**

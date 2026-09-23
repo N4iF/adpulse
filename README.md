@@ -46,7 +46,7 @@ Applications (dashboards, reports, APIs) are built on top of these packages in s
 ```
 packages/adsnap/    collector + schema
 packages/adrules/   catalog, finding, prioritize, graph, tier0, controls
-lab/                generic Hyper-V lab builders (deliberately misconfigured test domain)
+lab/                lab contract and scripts (VMware test domain; sessions run inside its DC)
 docs/               architecture, setup, handoff, build log, research, specs
 ```
 

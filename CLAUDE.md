@@ -12,6 +12,24 @@ Read this file fully before doing anything.
    work at the end of a session. The repo is the shared memory across machines; assistant memory is not.
 3. When switching machines, follow `docs/HANDOFF.md`.
 
+## Where this session runs (D30)
+
+Normally **inside the lab domain controller `DC01`** (Windows Server 2022 in VMware), in PowerShell, in a
+clone at `C:\ADPulse\adpulse`. The same repo also works on the host PC or the laptop; check with
+`hostname` and `(Get-CimInstance Win32_ComputerSystem).PartOfDomain`.
+
+When running on DC01:
+- **Lab only.** This domain is the ADPulse lab (`lab/README.md`). Never point anything at another domain.
+- **Admin rights are for the lab scripts.** Change Active Directory only through the scripts in `lab/`
+  (`Seed.ps1`, `Fix-*.ps1`, `Drift.ps1`). Any other directory change: ask Naif first.
+- **The collector runs as `adpulse.reader`** (standard mode), never as the admin session, so the
+  "standard-user assessment" claim stays true. Privileged mode is a separate, explicit run.
+- **Snapshots revert the clone.** Commit and push before asking Naif to revert a VMware snapshot; after a
+  revert, `git pull` every repo first. You cannot revert your own VM.
+- **Shell is Windows PowerShell 5.1:** no `&&`/`||` (use `;` and `if ($?) { … }`); quote paths with spaces.
+- First session on a new DC: fill in "Lab inventory" in `lab/README.md` from `Get-ADDomain`,
+  `Get-ADDomainController` and `Get-ADComputer -Filter *`, then commit.
+
 ## Non-negotiable rules
 
 - **No `Co-Authored-By` trailers** in commits, ever. Conventional commit messages (`feat:`, `fix:`,
@@ -22,7 +40,7 @@ Read this file fully before doing anything.
   product slice, only neutral facts belong here (that a first slice targets it, the Tier A scope, dates
   of engineering milestones); never organizer rules or their interpretation, organizer questions or
   answers, team composition, registration logistics, risks or tactics.
-- **Never scan a real domain.** Lab (`corp.local` on Hyper-V) only.
+- **Never scan a real domain.** Lab (`corp.local` in VMware) only.
 - **Keep it simple.** The smallest structure that meets the goal; no extra VMs, services, libraries or
   ceremony without a Tier A reason (D29).
 - **Data minimization:** store evidence needed to explain a finding, never secrets unnecessary to explain

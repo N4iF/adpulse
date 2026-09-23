@@ -26,3 +26,9 @@ This log, together with the git history, is the honest timeline of the project.
   Tier 0 v1; lab prerequisites and designed path in `lab/README.md`; root `dependencies` so `uv sync`
   installs both packages; pytest `--import-mode=importlib`; `uv.lock` committed; project-management
   content moved to the private repo. Still no engine code; next is the snapshot schema (tests first).
+- Scope cut (D29): no AD CS in Phase 1; PWD-01 replaces PKI-01; one-DC lab. Phase 1 implementation plan
+  written (`docs/superpowers/plans/2026-09-23-phase1-engine.md`, 18 tasks, test-first).
+- Working model changed (D30): the lab moves to VMware (`DC01` + `SRV01`) and development moves inside
+  DC01 — Claude Code in PowerShell from a git clone at `C:\ADPulse\`. Rewrote `docs/SETUP.md` for Windows
+  Server 2022 (no winget; official installers), added "Where this session runs" to `CLAUDE.md`, snapshot
+  discipline to `lab/README.md` and `docs/HANDOFF.md`.

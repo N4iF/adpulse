@@ -21,11 +21,12 @@ Assistant memory is disposable; the repos are the truth. Follow this checklist e
    Then commit with a conventional message and push. Do this in **every repo with changes**
    (`adpulse`, `adpulse-notes`, later the product-slice repo). Never leave uncommitted work.
    Never add a `Co-Authored-By` trailer.
-5. If the lab changed: create a Hyper-V checkpoint and name it in the build log.
+5. If the lab changed: ask Naif to take a VMware snapshot and name it in the build log. Everything must be
+   pushed first — a snapshot revert rolls back the clone on DC01.
 
 ## When you arrive (2 minutes)
 
-1. `git pull` in every repo in the workspace.
+1. `git pull` in every repo in the workspace (always, and especially after a snapshot revert).
 2. Read `PROJECT-STATUS.md`, then the last 3 entries of `docs/BUILD-LOG.md`. If `adpulse-notes` is
    present, read its `STATUS.md` too.
 3. `uv sync` if `pyproject.toml` or `uv.lock` changed.

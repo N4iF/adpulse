@@ -1,33 +1,60 @@
-# lab — a deliberately misconfigured Active Directory on Hyper-V (one VM)
+# lab — the ADPulse test domain in VMware
 
-Reusable lab for developing and demonstrating ADPulse. Never use these scripts against a real domain;
-they create intentional weaknesses. Steps marked **[admin]** need an elevated PowerShell on the host.
+Reusable lab for developing and demonstrating ADPulse. Never use these scripts against a real domain.
 
-## Topology (Phase 1: one domain controller, nothing else)
+## How we work (D30, 2026-09-23)
+
+Development happens **inside the domain controller**: Claude Code runs in PowerShell on `DC01`, in a git
+clone of this repo. Code, tests, the collector and the lab scripts all run there. The host PC only runs
+VMware and holds the snapshots. Setup: `docs/SETUP.md`.
+
+## Topology
 
 ```
-Hyper-V Internal switch "LABNET" 10.10.10.0/24
-  Host   10.10.10.1    development box (collector, tests, apps)
-  DC01   10.10.10.10   dc01.corp.local — AD DS, DNS, LDAPS   Windows Server 2022 eval, 2 vCPU, 4 GB, 60 GB
+VMware Workstation — both VMs on the NAT network (VMnet8), internet via NAT
+  DC01    <static IP>   dc01.corp.local — AD DS, DNS, LDAPS, dev tools, Claude Code
+  SRV01   <static IP>   srv01.corp.local — member server
 ```
 
-The same VM is the "lite lab": export the `seeded` checkpoint and import it on the laptop. Extra VMs
-(a client, an AD CS server), scale seeding (BadBlood) and vulnerable-AD are Tier B.
+No AD CS, no client VM, no scale seeding in Phase 1 (D29). If the machines already use other names,
+domain or IPs, the first session inside DC01 records the real values below and in `.env`.
 
-## Build (about 45 minutes once, then minutes from checkpoints)
+## Lab inventory (fill in on the first session inside DC01)
 
-| Step | How | Who |
-|---|---|---|
-| 1. Hyper-V switch | `New-VMSwitch -Name LABNET -SwitchType Internal`; give the host adapter 10.10.10.1/24; hosts file: `10.10.10.10 dc01.corp.local corp.local` | [admin] |
-| 2. ISO | Windows Server 2022 evaluation (Desktop Experience) from the Microsoft Evaluation Center into `lab/ISOs/` (git-ignored) | Naif |
-| 3. VM + OS | `New-VM DC01 -Generation 2 -MemoryStartupBytes 4GB -SwitchName LABNET`, attach ISO, install Windows by hand (~20 min), set the local Administrator password | [admin] |
-| 4. Promote | copy `Install-DC.ps1` in (PowerShell Direct: `Copy-VMFile`), run it inside DC01: rename, static IP 10.10.10.10, `Install-ADDSForest -DomainName corp.local`, reboot | script |
-| 5. Checkpoint | `Checkpoint-VM DC01 -SnapshotName clean` | [admin] |
-| 6. Seed | run `Seed.ps1` inside DC01 (`Invoke-Command -VMName DC01`) — see table below | script |
-| 7. Checkpoint | `Checkpoint-VM DC01 -SnapshotName seeded` | [admin] |
+| Item | Value |
+|---|---|
+| Domain DNS / NetBIOS name | corp.local / CORP |
+| DC name / IP | DC01 / ______ |
+| Member server name / IP | SRV01 / ______ |
+| Windows Server version and build | ______ |
+| Snapshot `clean` taken | ______ |
+| Snapshot `seeded` taken | ______ |
 
-`Reset.ps1` = `Restore-VMSnapshot DC01 -Name seeded` (under 2 minutes). `Export-Lab.ps1` exports DC01
-for the laptop.
+## Snapshot discipline
+
+A VMware snapshot revert also reverts the git clone on DC01's disk.
+
+1. **Before any revert:** commit and push from DC01; `git status` must be clean in every repo.
+2. **After any revert:** `git pull` in every repo before anything else.
+3. Naif takes and reverts snapshots on the host (VMware UI or `vmrun`); a session inside the VM cannot
+   revert its own machine.
+
+Snapshots: `clean` (domain built, dev tools installed, nothing seeded) and `seeded` (after `Seed.ps1`).
+For the laptop demo, copy the VM folders (or export to OVF) and open them in VMware on the laptop.
+
+## Build
+
+| Step | Where / who |
+|---|---|
+| 1. Two Windows Server 2022 VMs on VMnet8 with static IPs; SRV01's DNS points to DC01 | host, Naif |
+| 2. Promote DC01 (`Install-DC.ps1`, only if the forest does not exist yet); join SRV01 to the domain | DC01 / SRV01, elevated PowerShell |
+| 3. Install dev tools and Claude Code on DC01, clone the repos (`docs/SETUP.md`) | DC01, Naif |
+| 4. Snapshot `clean` | host, Naif |
+| 5. Run `Seed.ps1` in an elevated PowerShell on DC01 (items below) | DC01 |
+| 6. Snapshot `seeded` | host, Naif |
+
+The DEL-01 item below uses the real member server `SRV01` when it is joined to the domain; the computer
+object `APP01` is the fallback when there is no second server.
 
 ## What `Seed.ps1` creates
 
@@ -62,10 +89,11 @@ result with reproducible evidence, every remediation causing the expected lifecy
 
 ## Scripts (to be written in Phase 1)
 
-`Install-DC.ps1`, `Seed.ps1`, `Drift.ps1` (add an SPN, grant a bad ACE, disable an account, fix one
-finding), `Fix-<check>.ps1` for each of the 12 checks, `Reset.ps1`, `Export-Lab.ps1`.
+`Install-DC.ps1`, `Seed.ps1`, `Drift.ps1` (changes lab state between scans for the lifecycle demo),
+`Fix-<check>.ps1` for each of the 12 checks. All run inside DC01 in an elevated PowerShell. Reset and
+export are VMware operations on the host (see "Snapshot discipline"), not scripts.
 
-## Host `.env` (git-ignored)
+## `.env` on DC01 (git-ignored, repo root)
 
 ```
 ADPULSE_DC=dc01.corp.local
@@ -78,5 +106,5 @@ ADPULSE_CA_CERT=lab/dc01-ldaps.cer   # exported self-signed certificate
 
 ## Rejected for Phase 1
 
-AutomatedLab (heavy module for one VM), BadBlood and vulnerable-AD (noise we don't need for 12 checks),
-GOAD/Ludus (no Hyper-V), a second VM with AD CS (only PKI-01 needs it — Tier B).
+Hyper-V (replaced by VMware on 2026-09-23, D30), AutomatedLab, BadBlood and vulnerable-AD (noise we
+don't need for 12 checks), GOAD/Ludus, an AD CS server (only PKI-01 needs it — Tier B).

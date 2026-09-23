@@ -1,6 +1,6 @@
 # ADPulse نبض — design specification
 
-Date: 2026-09-22 · Status: approved · Amended 2026-09-23 (D21–D27) · Owner: Naif Al Anazi
+Date: 2026-09-22 · Status: approved · Amended 2026-09-23 (D21–D30) · Owner: Naif Al Anazi
 
 ## 1. Purpose
 
@@ -101,12 +101,12 @@ the machine.
 
 ## 5. Lab
 
-Hyper-V Internal switch `LABNET` 10.10.10.0/24, domain `corp.local`, one Windows Server 2022 evaluation
-VM `DC01` (AD DS, DNS, self-signed LDAPS certificate). OS installed by hand once; then `Install-DC.ps1`,
-`Seed.ps1` (the 12 Tier A seeds, the designed path, the `adpulse.reader` account), checkpoints `clean` and
-`seeded`; `Drift.ps1` changes state between scans; `Fix-<check>.ps1` remediations;
-`expected-findings.yaml` is the ground-truth dataset. Extra VMs, AD CS and scale seeding are Tier B.
-See `lab/README.md`.
+VMware Workstation, domain `corp.local`: `DC01` (Windows Server 2022, AD DS, DNS, self-signed LDAPS
+certificate) and `SRV01` (member server). Development runs inside DC01 (Claude Code in PowerShell, git
+clone at `C:\ADPulse\`, amended 2026-09-23, D30). `Install-DC.ps1`, `Seed.ps1` (the 12 Tier A seeds, the
+designed path, the `adpulse.reader` account), snapshots `clean` and `seeded`; `Drift.ps1` changes state
+between scans; `Fix-<check>.ps1` remediations; `expected-findings.yaml` is the ground-truth dataset. AD CS
+and scale seeding are Tier B. See `lab/README.md`.
 
 ## 6. Verification and validation
 

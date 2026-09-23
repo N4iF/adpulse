@@ -69,6 +69,13 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   packages; pytest `--import-mode=importlib`; `uv.lock` committed; rule files use snake_case names.
 - **D27 Catalog count.** The research catalog holds 104 checks (90 standard-user, 10 elevated, 4 mixed),
   not 79 as first stated.
+- **D30 Work inside the lab DC, on VMware (Naif, 2026-09-23).** The lab runs in VMware Workstation: `DC01`
+  (domain controller) and `SRV01` (member server, the real target of the DEL-01 seed). Claude Code runs in
+  PowerShell inside DC01 from a git clone at `C:\ADPulse\`; code, tests, collector and lab scripts run
+  there. Supersedes the Hyper-V lab and "develop on the host" parts of D14/D29. Why: working inside the
+  environment being assessed removes guesswork. Consequences: snapshot reverts roll back the clone (push
+  before every revert, pull after); the collector still runs as `adpulse.reader`; directory changes only
+  through `lab/` scripts.
 - **D29 Scope cut (Naif, 2026-09-23): no AD CS in Phase 1.** PKI-01 moves to Tier B; PWD-01 (weak
   minimum password length) is the twelfth Tier A check. The lab is a single DC (`DC01`) installed by hand
   once, then scripted (`Install-DC.ps1`, `Seed.ps1`); LDAPS uses a self-signed certificate on DC01; no
