@@ -1,6 +1,6 @@
 # ADPulse نبض — design specification
 
-Date: 2026-09-22 · Status: approved · Owner: Naif Al Anazi
+Date: 2026-09-22 · Status: approved · Amended 2026-09-23 (D21–D27) · Owner: Naif Al Anazi
 
 ## 1. Purpose
 
@@ -22,7 +22,7 @@ Cutting scope always cuts the slice, never the core's quality.
 | Component | ADPulse long-term | First product slice |
 |-----------|-------------------|---------------------|
 | AD collector | Architecture + reusable package | Working subset |
-| Rules | Extensible catalog (79+) | 12 lab-verified rules |
+| Rules | Extensible catalog (104 today) | 12 lab-verified rules |
 | Graph | General engine | Selected evidence-backed paths |
 | Control evidence | Mapping framework | Selected IAM controls |
 | Dashboard | Future product architecture | 5 key pages |
@@ -51,9 +51,10 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
   elevated account (privileged assessment). Security descriptors read with `LDAP_SERVER_SD_FLAGS`
   (OID 1.2.840.113556.1.4.801, flags 0x07) and parsed with `winacl` (pinned) into a canonical rights
   vocabulary. Extended-right and attribute GUIDs resolved from `CN=Extended-Rights` and the schema.
-- SYSVOL over SMB (impacket) for Group Policy Preference files and `GptTmpl.inf`.
-- Output: versioned `Snapshot` (pydantic v2). Object identity = objectGUID; `object_sid` nullable.
-  `raw` LDAP attributes vs `derived` normalized fields; rules read only `derived`.
+- SYSVOL over SMB (`smbprotocol`, pure Python) for Group Policy Preference files and `GptTmpl.inf`.
+- Output: versioned `Snapshot` (pydantic v2): one `objects[]` list for every object type. Object identity
+  = objectGUID; `object_sid` nullable. `raw` LDAP attributes vs `derived` normalized fields plus the parsed
+  `security_descriptor`; rules never read `raw` (dictionary in `docs/architecture.md`).
 - `coverage` per area (`full | partial | none`) and `errors[]`; per-module failures never abort a run.
 - Data minimization: presence of GPP `cpassword` recorded, value never stored or decrypted; password-like
   strings in descriptions reduced to a match indicator; no credentials in snapshots or fixtures.
@@ -66,10 +67,11 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
   why_it_matters_en/ar, remediation_en/ar, control_mappings.nca_ecc_2_2024[], attack_techniques[],
   matches_pingcastle_rule, evidence_source) and one `evaluate(snapshot) -> list[Finding]`. Statuses:
   `fail | pass | not_assessed | needs_elevated`. The long-term catalog is `docs/research/ad-check-catalog.md`.
-- **Finding model:** id, rule_id, title, category, severity, status, affected_object,
-  affected_object_type, evidence, evidence_source, why_it_matters, remediation, privilege_required,
-  exposure, blast_radius, control_mappings, attack_techniques, related_paths, first_seen, last_seen,
-  resolved_at, confidence, assessment_limitations. Key = (rule_id, object_id).
+- **Finding model:** a rule returns a `CheckResult` (status, reason, confidence, findings[]). Finding:
+  id, rule_id, title, category, severity, status, affected_object, affected_object_type, subject_id,
+  evidence, evidence_source, why_it_matters, remediation, privilege_required, exposure, blast_radius,
+  control_mappings, attack_techniques, related_paths, first_seen, last_seen, resolved_at, confidence,
+  assessment_limitations. Key = (rule_id, object_id, subject_id).
 - **Prioritization v1:** documented factors (severity, exposure, affected assets, privilege required,
   blast radius, evidence confidence, path relevance) and a labelled heuristic priority score. No domain
   score is presented as an objective measurement.
@@ -77,7 +79,8 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
   DCSync, ForceChangePassword, WriteProperty(KeyCredentialLink | servicePrincipalName | member),
   AllowedToDelegate, RBCD, GPO-link, ESC-enroll; every edge `{type, source, target, evidence,
   preconditions[], confidence}`. Output: "potential privilege-escalation paths" to Tier 0 as JSON subgraphs.
-- **Tier 0:** seed list (see catalog) and transitive closure over membership and control rights.
+- **Tier 0:** v1 (Tier A) = well-known groups by RID + recursive membership + DCs + RID 500/502;
+  the control-rights closure is Tier B. Details in `docs/architecture.md`.
 - **Controls:** control-evidence engine for NCA ECC-2:2024 (verified text in
   `docs/research/nca-ecc-mapping.md`): per control `technical_evidence_pass | technical_evidence_fail |
   not_assessed (+reason)`, evidence list, and the fixed limitation sentence. Never "compliance".
@@ -139,5 +142,6 @@ no `Co-Authored-By` trailers. Versions verified 2026-09-22: Node 24 LTS, React 1
   Checks: DEL-01, DEL-05, ACL-01, ACL-03, PRV-04, KRB-01, KRB-02, KRB-03, PKI-01, GPO-01, ACC-01, ACC-04.
 - **Tier B:** PWD-01/02/04, PRV-01/02/06, ACC-09, STL-01/02, OS-01, Tier 0 closure, more ADCS/GPO,
   RTL polishing, trend visualizations, remediation scripts, basic scheduler.
-- **Tier C:** 79+ checks, multiple collectors, advanced ADCS, multi-domain/forest, continuous scheduling,
-  integrations, AI enrichment, historical analytics, category-scoring research, enterprise auth, RBAC.
+- **Tier C:** the full 104-check catalog and beyond, multiple collectors, advanced ADCS,
+  multi-domain/forest, continuous scheduling, integrations, AI enrichment, historical analytics,
+  category-scoring research, enterprise auth, RBAC.

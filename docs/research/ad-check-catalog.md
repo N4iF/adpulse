@@ -2,8 +2,31 @@
 
 Research output compiled from PingCastle rules, Semperis Purple Knight indicators, BloodHound edges,
 Microsoft AD security guidance, ADSecurity.org, Certipy/Locksmith (ADCS), ANSSI and MITRE ATT&CK.
-79 checks in 14 categories. This is the long-term catalog; product slices pick subsets (the Cyberthon MVP
-uses 12). Severity and privilege are suggestions to be confirmed in the lab.
+104 checks in 14 categories (90 standard-user, 10 elevated, 4 mixed). This is the long-term catalog;
+product slices pick subsets. Severity and privilege are suggestions to be confirmed in the lab.
+
+## Tier A — the 12 checks of the first product slice
+
+All standard-user, all with public exploit tooling. Detection uses the derived fields defined in
+`docs/architecture.md`; exclusions prevent false positives on a clean domain.
+
+| ID | Sev | Detection (derived fields) | Exclusions / notes | ECC |
+|---|---|---|---|---|
+| DEL-01 | Critical | `unconstrained_delegation` and not `is_dc` | — | 2-2-3-4 |
+| DEL-05 | High | domain `machine_account_quota` > 0 | — | 2-2-3-3 |
+| ACL-01 | Critical | domain object ACE with `ExtendedRight:DS-Replication-Get-Changes` + `-All` (or `AllExtendedRights`/`GenericAll`) | trustee not in Tier 0 v1 | 2-2-3-3 |
+| ACL-03 | Critical | ACE on a Tier 0 object with `GenericAll`, `GenericWrite`, `WriteDacl`, `WriteOwner` or `Owns` | trustee not in Tier 0 v1, not SELF/SYSTEM | 2-2-3-3 |
+| PRV-04 | Critical | user with `kerberoastable` and (`admin_count` = 1 or member of Tier 0 v1) | not krbtgt (`is_builtin`), enabled only | 2-2-3-4 |
+| KRB-01 | Critical | krbtgt `password_age_days` > threshold (default 180) | threshold is a documented parameter | 2-2-3-4 |
+| KRB-02 | High | user `asrep_roastable` and `enabled` | — | 2-2-3-4 |
+| KRB-03 | High | user `kerberoastable` and `enabled` | not krbtgt | 2-2-3-4 |
+| PKI-01 | Critical | template `enrollee_supplies_subject` and `client_auth_eku` and not `requires_manager_approval` and `authorized_signatures` = 0 and `published_on_cas` non-empty and an enrollment ACE (`ExtendedRight:Certificate-Enrollment`/`-AutoEnrollment`, `GenericAll`) for a non-Tier 0 trustee | `not_assessed` when coverage `adcs` = none | 2-2-3-3 |
+| GPO-01 | Critical | gpo `gpp_cpassword_files` non-empty | `not_assessed` when coverage `gpo_files` = none | 2-2-3-1 |
+| ACC-01 | High | user `passwd_notreqd` and `enabled` | not built-in Guest (RID 501, disabled by default) | 2-2-3-1 |
+| ACC-04 | High | user `password_in_text_indicator` | evidence = attribute names only, never values | 2-2-3-1 |
+
+Designed lab path for the demo: `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`
+(ACL-03 + PRV-04); the on-stage fix removes the GenericWrite ACE. See `lab/README.md`.
 
 **Legend.** `Acc`: **U** = read-only LDAP/LDAPS bind as an ordinary domain user; **E** = elevated (DC local
 admin / Domain Admin / delegated read on confidential attributes, remote registry, SACL read, DRSUAPI).
@@ -189,18 +212,17 @@ Note: OS findings are findings about exposure; they are **not** patch-management
 Note: audit findings are **not** event-log compliance evidence (ECC 2-12-3-x) unless log configuration is
 actually collected; otherwise `not_assessed`.
 
-**Total: 79 checks.** Priority build order for a first product slice: DEL-01, ACL-01, PRV-04, KRB-01,
-KRB-02, KRB-03, PKI-01, GPO-01, DEL-05, ACC-01 — all detectable with a single authenticated read-only LDAP
-bind and all mapped to public exploit tooling.
+**Total: 104 checks.** Build order for the first product slice: DEL-01, KRB-03, ACL-01 (vertical slice),
+then PRV-04, KRB-01, KRB-02, PKI-01, GPO-01, DEL-05, ACC-01, ACL-03, ACC-04.
 
 ## Privilege split summary
 
-- **Read-only LDAP as a plain domain user (~62 of 79):** every `userAccountControl` bit test,
+- **Read-only LDAP as a plain domain user (90 of 104):** every `userAccountControl` bit test,
   SPN/delegation/SID-history/`msDS-KeyCredentialLink` enumeration, all `ntSecurityDescriptor` **DACL**
   reads (Authenticated Users hold `READ_CONTROL` on most objects by default), trust objects, certificate
   templates and PKI objects in the Configuration NC, functional levels, `dsHeuristics`,
   `ms-DS-MachineAccountQuota`, and **SYSVOL file reads** (GPP `cpassword`, `GptTmpl.inf`, scripts, audit CSVs).
-- **Elevated required (~17):** LAPS password attributes (confidential-bit attributes), PSO objects,
+- **Elevated required (10, plus 4 partly elevated):** LAPS password attributes (confidential-bit attributes), PSO objects,
   **SACL** reads (`SeSecurityPrivilege`), CA registry flags (ESC6/ESC7/ESC11/ESC16), DC KDC/SCHANNEL
   registry, DC service state and event-log config, replication health, DRSUAPI-based password quality.
 - **Design note:** run the collector in both modes — a *standard-user* pass and a *privileged* pass — and

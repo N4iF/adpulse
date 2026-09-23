@@ -18,7 +18,10 @@ Read this file fully before doing anything.
   `docs:`, `test:`, `chore:`, `lab:`).
 - **Genuine git history.** Real dates. No backdating, no re-committing old work to look new.
 - **This repo is public.** No business plans, vision, pricing, strategy, correspondence, personal data,
-  credentials, real domain data, or Cyberthon strategy here. Those live in the private `adpulse-notes` repo.
+  credentials or real domain data. Those live in the private `adpulse-notes` repo. About the hackathon
+  product slice, only neutral facts belong here (that a first slice targets it, the Tier A scope, dates
+  of engineering milestones); never organizer rules or their interpretation, organizer questions or
+  answers, team composition, registration logistics, risks or tactics.
 - **Never scan a real domain.** Lab (`corp.local` on Hyper-V) only.
 - **Data minimization:** store evidence needed to explain a finding, never secrets unnecessary to explain
   it (no GPP password values, no decrypted secrets, redact password-like strings, no credentials in fixtures).
@@ -36,7 +39,8 @@ product slice, never shrinking the core's quality.
 
 Finding is the central domain object: `Collector → Snapshot → {Rule Engine, Evidence Normalizer} →
 Finding → {Controls Mapping, Path Graph, Lifecycle} → applications`. Collectors produce facts; rules judge.
-Rules read only `derived` fields of the snapshot, never raw LDAP attribute names.
+Rules never read `raw`; they read `derived` fields and the parsed `security_descriptor` only
+(dictionary in `docs/architecture.md`).
 
 ## Engineering conventions
 
@@ -45,7 +49,10 @@ Rules read only `derived` fields of the snapshot, never raw LDAP attribute names
   tests. Graph edges ship with precondition tests.
 - Lint/format with `ruff`. Type hints everywhere; pydantic v2 models.
 - Object identity is `object_id` = objectGUID (every AD object has one); `object_sid` is nullable.
-- Finding key is `(rule_id, object_id)`.
+- A rule returns one `CheckResult`; each `Finding` inside it is one failure on one object. Finding key is
+  `(rule_id, object_id, subject_id)`; `subject_id` is the trustee for ACL checks, else null.
+- Tests: `uv run pytest` runs with `--import-mode=importlib` (two `tests/` packages). Also
+  `uv run ruff check`. Rule files are `del_01.yaml` + `del_01.py` (importable names, no hyphens).
 - Pin `winacl` to an exact version/commit and test the security-descriptor structures we depend on.
 - Docs: design specs under `docs/superpowers/specs/`, implementation plans under `docs/superpowers/plans/`.
 
@@ -58,7 +65,8 @@ Rules read only `derived` fields of the snapshot, never raw LDAP attribute names
 | What was built when | `docs/BUILD-LOG.md` |
 | Setup on a new machine | `docs/SETUP.md` |
 | Design spec | `docs/superpowers/specs/2026-09-22-adpulse-design.md` |
-| Check catalog (79 checks) | `docs/research/ad-check-catalog.md` |
+| Check catalog (104 checks) and the Tier A twelve | `docs/research/ad-check-catalog.md` |
+| Lab contract, prerequisites, designed path | `lab/README.md` |
 | Collector/lab/tooling research | `docs/research/stack-and-lab.md` |
 | Comparable tools | `docs/research/comparable-tools.md` |
 | NCA ECC mapping (verified text) | `docs/research/nca-ecc-mapping.md` |

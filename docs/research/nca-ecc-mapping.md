@@ -48,22 +48,26 @@ and password management". Show both as printed.
 
 ## Rule YAML mapping example
 
+File: `packages/adrules/src/adrules/catalog/del_01.yaml`. The limitation sentence is a constant in
+`adrules.controls`, not a per-rule field.
+
 ```yaml
 id: DEL-01
+category: delegation
 severity: critical
 privilege_required: standard
+requires_coverage: [directory_objects]
 title_en: "Unconstrained Kerberos delegation on a non-domain-controller account"
-title_ar: "تفويض Kerberos غير المقيّد على حساب ليس وحدة تحكم مجال"
+title_ar: "تفويض Kerberos غير المقيّد على حساب لا يعود إلى وحدة تحكم بالمجال"
 why_it_matters_en: "This server can impersonate any employee, including executives and IT administrators."
 why_it_matters_ar: "يستطيع هذا الخادم انتحال هوية أي موظف، بما في ذلك الإدارة التنفيذية ومسؤولي تقنية المعلومات."
 remediation_en: "Remove unconstrained delegation; use resource-based constrained delegation; add privileged accounts to Protected Users."
 remediation_ar: "أزل التفويض غير المقيّد؛ استخدم التفويض المقيّد القائم على المورد؛ أضف الحسابات ذات الصلاحيات إلى مجموعة Protected Users."
 control_mappings:
-  nca_ecc_2_2024: ["2-2-3-3", "2-2-3-4"]
-attack_techniques: ["T1558", "T1550.003", "T1187"]
+  nca_ecc_2_2024: ["2-2-3-4"]
+attack_techniques: ["T1187", "T1550.003"]
 matches_pingcastle_rule: "P-UnconstrainedDelegation"
 evidence_source: "userAccountControl TRUSTED_FOR_DELEGATION (0x80000) on non-DC objects"
-assessment_limitation: "Evaluates technical AD configuration only; organizational policy/process compliance is not assessed."
 ```
 
 ## Rendered control-evidence example (UI / report)

@@ -42,9 +42,11 @@ Extended rights and property-set GUIDs (DCSync pair `1131f6aa-…`/`1131f6ad-…
 ### 1.3 Recommendation (Python-centric team)
 
 Primary collector: `ldap3` (paged search 1000, LDAPS 636, NTLM bind with an ordinary domain account —
-"standard-user assessment" is a selling point) + `winacl` pinned + `impacket` `SMBConnection` for
+"standard-user assessment" is a selling point) + `winacl` pinned + `smbprotocol` for
 `\\dc\SYSVOL\<domain>\Policies\*\{Machine,User}\Preferences\Groups\Groups.xml` and `GptTmpl.inf`.
-Alternative: `msldap` if the team is comfortable with asyncio.
+`impacket` was the original choice for SMB but was dropped on 2026-09-23: Windows Defender quarantines
+its `dcerpc/v5/dcomrt.py` during install (os error 225), and an offensive toolkit is not needed for file
+reads. Alternative: `msldap` if the team is comfortable with asyncio.
 
 PowerShell alternative: one `Export-ADSnapshot.ps1` (`ActiveDirectory` + `GroupPolicy` modules) emitting
 the same JSON via `ConvertTo-Json -Depth 12`; wins on `Get-Acl AD:\` (named rights) and `Get-GPOReport`.
@@ -56,7 +58,8 @@ the same JSON via `ConvertTo-Json -Depth 12`; wins on `Get-Acl AD:\` (named righ
    have none). (Correction from feedback: the original draft keyed by objectSid.)
 3. Canonical ACE-rights vocabulary (~15 tokens).
 4. `coverage` map so a rule returns `not_assessed` instead of a false pass.
-5. Findings are a separate store keyed `(rule_id, object_id)` with lifecycle; trends fall out for free.
+5. Findings are a separate store keyed `(rule_id, object_id, subject_id)` with lifecycle; trends fall out
+   for free.
 
 Adapters: `adsnap` (primary), then at most one importer (`sharphound_json` or `pingcastle_xml`) to prove
 the claim. Two collectors prove it; three burn a build day.
@@ -109,9 +112,10 @@ Hyper-V Internal switch "LABNET" 10.10.10.0/24
 ```
 Build: `01-Build-Lab.ps1` (AutomatedLab → checkpoint `clean`) → `02-BadBlood.ps1` → `03-VulnAD.ps1` →
 `04-Seed-Extras.ps1` (ADCS ESC1/ESC2/ESC8, GPP cpassword Groups.xml, unconstrained delegation on SRV01,
-RBCD, weak policy + unused FGPP, stale adminCount, old krbtgt, PASSWD_NOTREQD, RC4-only,
-KeyCredentialLink write for helpdesk, LAPS partial + readable → checkpoint `seeded`) → `05-Drift.ps1`
-between scans. Contract: restore `seeded` < 2 min; rebuild from `clean` < 20 min; from ISO < 60 min.
+RBCD, weak policy + unused FGPP, stale adminCount, PASSWD_NOTREQD, RC4-only, KeyCredentialLink write
+for a non-Tier 0 workstation account, LAPS partial + readable → checkpoint `seeded`) → `05-Drift.ps1`
+between scans. Seeds must not give the demo's start principal (helpdesk) a second route to Tier 0; the
+designed path is defined in `lab/README.md`. Contract: restore `seeded` < 2 min; rebuild from `clean` < 20 min; from ISO < 60 min.
 In-VM steps run from the host via PowerShell Direct (`Invoke-Command -VMName DC01`).
 
 ## 3. Stack versions (verified 2026-09-22)

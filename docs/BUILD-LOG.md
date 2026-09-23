@@ -5,9 +5,9 @@ This log, together with the git history, is the honest timeline of the project.
 
 ## 2026-09-21
 
-- Brainstormed the concept and constraints for Cyberthon 2026 (KFU); read the invite poster and the
-  platform pages (rules, tracks, timeline, registration form) as images.
-- Research: 79-check AD security catalog; collectors (ldap3 / winacl / impacket / PowerShell / SharpHound /
+- Brainstormed the concept and the constraints of a first product slice (a university hackathon entry
+  in Oct 2026).
+- Research: 104-check AD security catalog; collectors (ldap3 / winacl / impacket / PowerShell / SharpHound /
   ADRecon / PingCastle XML), lab tooling (AutomatedLab, BadBlood, vulnerable-AD, GOAD, Ludus), comparable
   tools, NCA ECC-2:2024 controls.
 
@@ -18,3 +18,11 @@ This log, together with the git history, is the honest timeline of the project.
 - Design approved. Decisions recorded in `DECISIONS.md`.
 - Scaffolded the workspace `E:\Projects\ADPulse\` and this repository: tracking files, package skeletons
   (`adsnap`, `adrules`), docs, research, spec. No engine code yet beyond `__init__` version strings.
+
+## 2026-09-23
+
+- Documentation audit (six onboarding perspectives, adversarially verified). Applied: check count 104;
+  Finding key with `subject_id`; derived-field dictionary and coverage semantics in `architecture.md`;
+  Tier 0 v1; lab prerequisites and designed path in `lab/README.md`; root `dependencies` so `uv sync`
+  installs both packages; pytest `--import-mode=importlib`; `uv.lock` committed; project-management
+  content moved to the private repo. Still no engine code; next is the snapshot schema (tests first).

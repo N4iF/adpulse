@@ -22,20 +22,26 @@ license. A DCO sign-off is a certification of origin; it is **not** a copyright 
   synthetic). Never include credentials, password values or decrypted secrets, even in tests.
 - Tests first. Every rule ships with positive and negative snapshot fixtures. Every graph edge type ships
   with precondition tests.
-- Rules read only `derived` snapshot fields, never raw LDAP attribute names.
+- Rules never read `raw`; they read `derived` fields and the parsed `security_descriptor` only
+  (`docs/architecture.md` lists the derived fields).
 - Keep terminology: "technical evidence", "potential privilege-escalation path", "standard-user assessment".
 - Bilingual texts: every user-facing rule string has `_en` and `_ar` variants.
 - Conventional commit messages. No `Co-Authored-By` trailers.
 
 ## Development setup
 
-See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest`, `uv run ruff check`.
+See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest` (runs with
+`--import-mode=importlib`), `uv run ruff check`.
 
 ## Adding a check
 
 1. Pick the id from `docs/research/ad-check-catalog.md` (or propose a new one in the same format).
-2. Add `packages/adrules/src/adrules/catalog/<ID>.yaml` (metadata, bilingual texts, mappings) and
-   `<ID>.py` with `evaluate(snapshot) -> list[Finding]`.
-3. Add `tests/catalog/test_<ID>.py` with a failing and a passing mini-snapshot.
-4. If the check needs new collector fields, add them to `adsnap` with a schema version bump and tests.
-5. Document the required collection privilege and the coverage key the check depends on.
+2. Add `packages/adrules/src/adrules/catalog/<id_snake>.yaml` (e.g. `del_01.yaml`: metadata, bilingual
+   texts, mappings, `requires_coverage`) and `<id_snake>.py` with `evaluate(snapshot) -> CheckResult`
+   (a status plus one `Finding` per failing object, or per object/trustee pair for ACL checks).
+3. Add `tests/catalog/test_<id_snake>.py` with a failing and a passing mini-snapshot built with
+   `adsnap.testing.make_snapshot`.
+4. If the check needs new derived fields, add them to `adsnap` (dictionary in `docs/architecture.md`)
+   with a schema version bump and tests.
+5. State the required collection privilege and the coverage key the check depends on; when that
+   coverage is `none`, the check must return `not_assessed`, never `pass`.

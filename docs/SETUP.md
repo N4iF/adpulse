@@ -1,6 +1,7 @@
 # SETUP — developing ADPulse نبض on a new machine
 
 Works on the 80 GB desktop (full lab) and the 16 GB laptop (lite lab). Windows 11 Pro assumed.
+Steps marked **[admin]** need an elevated prompt; an AI session cannot do them.
 
 ## 1. Tools
 
@@ -12,7 +13,8 @@ Works on the 80 GB desktop (full lab) and the 16 GB laptop (lite lab). Windows 1
 | uv | latest | `pip install uv` or `winget install astral-sh.uv` |
 | Node.js | **24 LTS** (Node 25 is EOL) | `winget install OpenJS.NodeJS.LTS` or `fnm install 24` |
 | pnpm | 9+ | `npm i -g pnpm` |
-| Hyper-V | Windows feature | `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All` (admin) |
+| Hyper-V | Windows feature | `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All` **[admin]** |
+| AutomatedLab | PowerShell module | `Install-Module AutomatedLab` **[admin]** (lab builds only) |
 | Playwright browsers (for PDF in apps) | — | `pnpm dlx playwright install chromium` (app repos only) |
 
 ## 2. Clone
@@ -27,16 +29,17 @@ gh repo clone N4iF/adpulse-notes      # private planning repo
 
 ```bash
 cd /e/Projects/ADPulse/adpulse
-uv sync            # creates .venv with both packages installed editable
-uv run pytest
+uv sync            # creates .venv with adsnap and adrules installed editable (from uv.lock)
+uv run pytest      # exit code 5 = "no tests collected"; expected until the first test exists
 uv run ruff check
 ```
 
 ## 4. Lab
 
-See `lab/README.md`. Summary: Hyper-V Internal switch `LABNET` 10.10.10.0/24 (host 10.10.10.1),
-`DC01` 10.10.10.10 (`corp.local`), optional `SRV01` (AD CS) and `WS01`. Windows Server 2022 evaluation ISO.
-On the laptop import only the `DC01` checkpoint (`Export-LiteLab.ps1`).
+See `lab/README.md` (prerequisites, LDAPS certificate, the `adpulse.reader` account, ISO location).
+Summary: Hyper-V Internal switch `LABNET` 10.10.10.0/24 (host 10.10.10.1), `DC01` 10.10.10.10
+(`corp.local`), `SRV01` (AD CS) and optional `WS01`. On the laptop import only the seeded `DC01`
+(`Export-LiteLab.ps1`).
 
 Host name resolution for the lab: add to `C:\Windows\System32\drivers\etc\hosts`
 ```
@@ -45,14 +48,14 @@ Host name resolution for the lab: add to `C:\Windows\System32\drivers\etc\hosts`
 ```
 or point the `LABNET` adapter's DNS at 10.10.10.10.
 
-## 5. Per-host `.env` (never committed)
+## 5. Per-host `.env` at the repo root (git-ignored, never committed)
 
 ```
-ADPULSE_DC=10.10.10.10
+ADPULSE_DC=dc01.corp.local        # DNS name, not IP: LDAPS validates the hostname
 ADPULSE_DOMAIN=corp.local
-ADPULSE_USER=standard.user@corp.local
+ADPULSE_USER=adpulse.reader@corp.local
 ADPULSE_PASSWORD=...
-ADPULSE_MODE=standard
+ADPULSE_MODE=standard             # or privileged
 ```
 
 ## 6. Before you start working

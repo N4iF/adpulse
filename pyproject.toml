@@ -6,6 +6,7 @@ requires-python = ">=3.12,<3.13"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Naif Al Anazi" }]
+dependencies = ["adsnap", "adrules"]  # workspace members; without this `uv sync` installs only dev tools
 
 [tool.uv.workspace]
 members = ["packages/adsnap", "packages/adrules"]
@@ -33,7 +34,7 @@ ignore = ["S101"]  # assert is fine in tests
 
 [tool.pytest.ini_options]
 testpaths = ["packages/adsnap/tests", "packages/adrules/tests"]
-addopts = "-q"
+addopts = "-q --import-mode=importlib"  # two tests/ packages; default import mode collides
 
 [tool.mypy]
 python_version = "3.12"

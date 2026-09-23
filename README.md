@@ -8,7 +8,10 @@ ADPulse turns Active Directory state into security-control evidence and remediat
 
 Status: **pre-alpha, design complete, engine under construction** (September 2026).
 
-## What it does
+## What it is designed to do
+
+The packages are skeletons today; the bullets below describe the design, and `PROJECT-STATUS.md` shows
+what exists.
 
 ```
 AD facts  →  security checks  →  evidence  →  control mapping  →  assessment status
@@ -47,13 +50,21 @@ lab/                generic Hyper-V lab builders (deliberately misconfigured tes
 docs/               architecture, setup, handoff, build log, research, specs
 ```
 
+## Start here
+
+1. `PROJECT-STATUS.md` — phase, next actions, scope boundary.
+2. `docs/architecture.md` — snapshot, Finding, coverage, Tier 0, the derived-field dictionary.
+3. `docs/research/ad-check-catalog.md` — the long-term catalog and the 12 Tier A checks.
+4. `CONTRIBUTING.md` — how to add a check, tests first.
+
 ## Development
 
 Python 3.12, managed with `uv`. See `docs/SETUP.md`. Tests use pytest and are written first.
 
 ```bash
-uv sync
-uv run pytest
+uv sync            # installs adsnap and adrules editable, plus dev tools
+uv run pytest      # exit code 5 ("no tests collected") until the first test exists
+uv run ruff check
 ```
 
 ## Safety

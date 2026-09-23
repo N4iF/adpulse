@@ -17,14 +17,13 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
 
 ## 2026-09-22
 
-- **D7 Ownership structure.** ADPulse is Naif's independent open-source project (this repo, Apache-2.0,
-  public). Product slices such as the Cyberthon 2026 submission live in separate repositories and depend on
-  the engine as an open-source dependency. Why: Cyberthon rule 15 assigns the submitted project to the
-  organizer; rule 8 allows disclosed open-source libraries. Consequence: nothing in this repo may be
-  specific to a submission; no business content here.
-- **D8 License.** Apache-2.0 (true open source), not a non-commercial licence. Why: rule 8 says
-  "open-source"; a withheld proprietary core would risk exclusion. DCO sign-off for contributors is not
-  copyright assignment; contributions are Apache-2.0-licensed by their authors.
+- **D7 Repository structure.** ADPulse is Naif's independent open-source project (this repo, Apache-2.0,
+  public). Product slices (dashboards, reports, APIs, event demos) live in separate repositories and
+  depend on the engine as an open-source dependency. Why: the engine is a reusable library; slices come
+  and go. Consequence: nothing in this repo is specific to one slice; no business content here.
+- **D8 License.** Apache-2.0, a standard open-source licence, so any product slice or third party can
+  consume the engine under well-understood terms. DCO sign-off for contributors is not copyright
+  assignment; contributions are Apache-2.0-licensed by their authors.
 - **D9 Genuine history.** Real commit dates only; no backdating or staged re-commits.
 - **D10 Core vs product-slice principle.** Build the core for correctness, extensibility and long-term
   use; build product slices only as much as needed to demonstrate it. Scope cuts hit the slice.
@@ -51,3 +50,26 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   with redaction). Never creates findings or changes severity, priority, paths or control status.
 - **D20 Versions (verified 2026-09-22).** Python 3.12; Node 24 LTS (Node 25 is EOL); React 19.3;
   `winacl` pinned (0.1.9 on PyPI, stale) with structure tests.
+
+## 2026-09-23 (documentation audit)
+
+- **D21 Snapshot shape.** One `objects[]` list for every AD object type (domain head, GPOs, templates,
+  CAs, trusts, FGPPs included); no separate policy/PKI/trust sections. Rules never read `raw`; they read
+  `derived` and the parsed `security_descriptor`. The derived-field dictionary in `architecture.md` is
+  the contract between collector and rules.
+- **D22 Finding key.** `(rule_id, object_id, subject_id)`; a rule returns a `CheckResult` (status +
+  findings). Why: ACL findings are about an object *and* a trustee.
+- **D23 Coverage semantics.** Keys `directory_objects, acls, gpo_settings, gpo_files, adcs, ca_registry,
+  dc_os_config`; values `full | partial | none`; rules declare `requires_coverage`; `none` → `not_assessed`.
+- **D24 Tier 0 v1 in Tier A.** Well-known groups by RID + recursive membership + DCs + RID 500/502. The
+  control-rights closure stays Tier B.
+- **D25 Lite lab.** DC01 exported from the seeded full lab keeps the Configuration NC, so template-based
+  checks (PKI-01) are assessable on the laptop; CA-host checks are not.
+- **D26 Tooling fixes.** Root `dependencies = ["adsnap", "adrules"]` so `uv sync` installs the workspace
+  packages; pytest `--import-mode=importlib`; `uv.lock` committed; rule files use snake_case names.
+- **D27 Catalog count.** The research catalog holds 104 checks (90 standard-user, 10 elevated, 4 mixed),
+  not 79 as first stated.
+- **D28 SMB library.** `smbprotocol` instead of `impacket` for SYSVOL reads. Why: Windows Defender
+  quarantines impacket's DCOM module on install (os error 225), and impacket is an offensive toolkit we
+  only needed for file reads; `smbprotocol` is pure Python, maintained, supports NTLM/Kerberos, and is not
+  flagged. Security-descriptor parsing stays with `winacl`.
