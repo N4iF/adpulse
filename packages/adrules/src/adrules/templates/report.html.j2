@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ direction }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADPulse — {{ scan.domain }}</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --line:#334155;
+          --critical:#ef4444; --high:#f97316; --medium:#eab308; --low:#94a3b8; --ok:#22c55e; --new:#38bdf8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Segoe UI", Tahoma, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+  header h1 { margin: 0 0 4px; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); }
+  .limit { color:var(--muted); font-size:13px; border-inline-start:3px solid var(--line); padding-inline-start:10px; margin:14px 0; }
+  .tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin:20px 0 8px; }
+  .tile { background:var(--card); border-radius:10px; padding:14px; }
+  .tile b { display:block; font-size:30px; }
+  .tile.warn { outline: 2px solid var(--medium); }
+  .coverage { color:var(--muted); margin: 0 0 20px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden; }
+  th, td { padding:10px; text-align:start; border-bottom:1px solid var(--line); vertical-align:top; }
+  .finding { background:var(--card); border-radius:10px; padding:16px; margin:0 0 14px; break-inside: avoid; }
+  .finding h3 { margin:0 0 8px; font-size:18px; }
+  .meta { color:var(--muted); font-size:13px; margin:0 0 10px; }
+  dl { display:grid; grid-template-columns: 190px 1fr; gap:6px 12px; margin:0; }
+  dt { color:var(--muted); }
+  dd { margin:0; }
+  .sev { font-weight:600; }
+  .sev.critical { color:var(--critical); } .sev.high { color:var(--high); } .sev.medium { color:var(--medium); } .sev.low { color:var(--low); }
+  .state.new { color:var(--new); } .state.resolved { color:var(--ok); }
+  .status.pass { color:var(--ok); } .status.fail { color:var(--high); }
+  code { font-family: Consolas, monospace; }
+  .fix { white-space: pre-line; }
+  @media (max-width: 640px) { dl { grid-template-columns: 1fr; } }
+  @media print {
+    body { background:#fff; color:#000; }
+    .tile, table, .finding { background:#fff; border:1px solid #ccc; }
+    .limit, .coverage, .meta, dt { color:#333; }
+  }
+</style>
+</head>
+<body><main>
+<header>
+  <h1>ADPulse نبض — {{ t.title }}</h1>
+  <p><bdi dir="ltr">{{ scan.domain }}</bdi> · <bdi dir="ltr">{{ scan.collected_at.strftime("%Y-%m-%d %H:%M") }} UTC</bdi> · {{ mode_label }}</p>
+</header>
+<p class="limit">{{ limitation|bidi }}</p>
+
+<section class="tiles">
+  <div class="tile">{{ t.checks }}<b data-tile="checks">{{ scan.results|length }}</b></div>
+  <div class="tile">{{ t.failed }}<b data-tile="failed">{{ scan.failed() }}</b></div>
+  <div class="tile">{{ t.new }}<b data-tile="new">{{ scan.count("new") }}</b></div>
+  <div class="tile">{{ t.resolved }}<b data-tile="resolved">{{ scan.count("resolved") }}</b></div>
+  {% set unassessed = scan.results|length - scan.assessed() %}
+  {% if unassessed %}<div class="tile warn">{{ t.not_assessed }}<b data-tile="not_assessed">{{ unassessed }}</b></div>{% endif %}
+</section>
+<p class="coverage">{{ t.assessed }}: {{ scan.assessed() }} {{ t.of }} {{ scan.results|length }}</p>
+
+<h2>{{ t.checks_title }}</h2>
+<table>
+  <tr><th>{{ t.rule }}</th><th>{{ t.check }}</th><th>{{ t.status }}</th><th>{{ t.reason }}</th></tr>
+  {% for r in scan.results %}
+  <tr data-check="{{ r.rule_id }}" data-status="{{ r.status.value }}">
+    <td><code dir="ltr">{{ r.rule_id }}</code></td>
+    <td>{% if r.rule_id in titles %}{{ titles[r.rule_id][lang]|bidi }}{% else %}{{ r.rule_id }}{% endif %}</td>
+    <td class="status {{ r.status.value }}">{{ status[r.status.value] }}</td>
+    <td>{{ r.reason|reason|bidi }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>{{ t.findings }}</h2>
+{% if all_passed and not scan.lifecycle %}
+<p>{{ t.all_passed }}</p>
+{% elif not scan.lifecycle %}
+<p>{{ t.no_findings }}</p>
+{% endif %}
+{% for e in scan.lifecycle %}
+{% set f = e.finding %}
+<section class="finding" data-rule="{{ f.rule_id }}" data-state="{{ e.state }}">
+  <h3>{{ f.title[lang]|bidi }}</h3>
+  <p class="meta">
+    <span class="sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span> ·
+    <span class="state {{ e.state }}">{{ t[e.state] }}{% if e.not_reassessed %} ({{ t.not_reassessed }}){% endif %}</span> ·
+    <code dir="ltr">{{ f.rule_id }}</code> · {{ t.object }}: <bdi dir="ltr">{{ f.affected_name }}</bdi>
+  </p>
+  <dl>
+    {% for key, value in f.evidence.items() %}
+    <dt>{% if key == "current" and (e.state == "resolved" or e.not_reassessed) %}{{ t.last_seen }}{% elif key in t %}{{ t[key] }}{% else %}{{ key }}{% endif %}</dt>
+    <dd><code dir="ltr">{{ value }}</code></dd>
+    {% endfor %}
+    <dt>{{ t.evidence_source }}</dt><dd>{{ f.evidence_source|bidi }}</dd>
+    <dt>{{ t.why }}</dt><dd>{{ f.why_it_matters[lang]|bidi }}</dd>
+    <dt>{{ t.fix }}</dt><dd class="fix">{{ f.remediation[lang]|bidi }}</dd>
+    <dt>{{ t.ecc }}</dt><dd><bdi dir="ltr">{{ f.control_mappings.get("nca_ecc_2_2024", [])|join(", ") }}</bdi></dd>
+    <dt>{{ t.attack }}</dt><dd><bdi dir="ltr">{{ f.attack_techniques|join(", ") }}</bdi></dd>
+  </dl>
+</section>
+{% endfor %}
+
+<h2>{{ t.history }}</h2>
+<p class="coverage">{{ t.history_note|bidi }}</p>
+<table>
+  <tr><th>{{ t.date }}</th><th>{{ t.failed }}</th><th>{{ t.new }}</th><th>{{ t.open }}</th><th>{{ t.resolved }}</th></tr>
+  {% for h in history %}
+  <tr><td><bdi dir="ltr">{{ h.collected_at.strftime("%Y-%m-%d %H:%M") }}</bdi></td><td>{{ h.failed() }}</td><td>{{ h.count("new") }}</td><td>{{ h.count("open") }}</td><td>{{ h.count("resolved") }}</td></tr>
+  {% endfor %}
+</table>
+</main></body></html>

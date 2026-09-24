@@ -33,6 +33,8 @@ license. A DCO sign-off is a certification of origin; it is **not** a copyright 
 
 See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest` (runs with
 `--import-mode=importlib`), `uv run ruff check`, `uv run mypy` (strict). All three must pass.
+Test file names must be unique across both packages (`test_adsnap_cli.py`, `test_adrules_cli.py`): both
+`tests/` folders are packages named `tests`, so a repeated name silently shadows the other file.
 
 ## Adding a check
 

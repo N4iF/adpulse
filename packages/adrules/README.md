@@ -23,6 +23,7 @@ security descriptors.**
 uv run adrules scan                          # MVP-1: collect, evaluate, diff, write scan JSON + EN and AR reports
 uv run adrules scan --from-snapshot s.json   # same, from a saved snapshot
 uv run adrules evaluate s.json               # MVP-1: print check results as JSON
+uv run adrules evaluate s.json --out r.json  # same, written as UTF-8 (PowerShell 5.1 '>' adds a BOM)
 ```
 
 Planned later: `adrules paths snapshot.json --from "CORP\\helpdesk" --to tier0` (increment 5).
