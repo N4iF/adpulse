@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "snapshot": {
+    "id": "20260924T200246Z-corp.local",
+    "collected_at": "2026-09-24T20:02:46.012916Z",
+    "collector": {
+      "name": "adsnap",
+      "version": "0.0.1",
+      "auth": "simple",
+      "mode": "standard"
+    },
+    "domain": {
+      "object_id": "f00663f0-357f-437f-8833-618dab04bc14",
+      "dn": "DC=corp,DC=local",
+      "netbios": "CORP",
+      "sid": "S-1-5-21-1100996544-3009008355-3305678616",
+      "functional_level": null
+    }
+  },
+  "objects": [
+    {
+      "object_id": "f00663f0-357f-437f-8833-618dab04bc14",
+      "object_type": "domain",
+      "dn": "DC=corp,DC=local",
+      "name": "corp.local",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616",
+      "raw": {
+        "minPwdLength": 7,
+        "pwdProperties": 1,
+        "lockoutThreshold": 0
+      },
+      "derived": {
+        "min_password_length": 7,
+        "password_complexity": true,
+        "lockout_threshold": 0
+      },
+      "security_descriptor": null
+    }
+  ],
+  "coverage": {
+    "directory_objects": "full"
+  },
+  "errors": []
+}
