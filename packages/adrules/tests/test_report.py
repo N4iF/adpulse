@@ -6,7 +6,7 @@ from adrules.catalog import run_all
 from adrules.report import render_report
 from adrules.scan import ScanResult, build_scan
 from adsnap.model import CoverageLevel
-from adsnap.testing import make_domain, make_snapshot
+from adsnap.testing import make_domain, make_snapshot, make_user
 
 # Tests may not import each other (pytest --import-mode=importlib), so each file keeps its own helper.
 WEAK = dict(min_password_length=6, password_complexity=False, lockout_threshold=0)
@@ -16,7 +16,7 @@ FRESH = dict(min_password_length=7, password_complexity=True, lockout_threshold=
 
 def _scan(domain: dict[str, Any], previous: ScanResult | None = None, day: int = 1,
           coverage: dict[str, CoverageLevel] | None = None, mode: Any = "standard") -> ScanResult:
-    snap = make_snapshot(make_domain(**domain), collected_at=datetime(2026, 10, day, tzinfo=UTC), coverage=coverage, mode=mode)
+    snap = make_snapshot(make_domain(**domain), make_user("Administrator", rid=500), collected_at=datetime(2026, 10, day, tzinfo=UTC), coverage=coverage, mode=mode)
     return build_scan(snap, run_all(snap), previous)
 
 
@@ -34,7 +34,7 @@ def test_it_first_view_shows_what_to_fix_before_anything_else() -> None:
     s1 = _scan(FRESH)
     html = render_report(s1, [s1], "en")
     assert '<html lang="en" dir="ltr">' in html and "Standard-user assessment" in html
-    assert 'data-tile="to_fix">2<' in html and 'data-tile="fixed">0<' in html and 'data-tile="passed">1<' in html
+    assert 'data-tile="to_fix">2<' in html and 'data-tile="fixed">0<' in html and 'data-tile="passed">3<' in html
     main = _without_grc(html)
     assert main.index("What to fix") < main.index("All checks") < main.index("Scan history")
     assert main.index("Minimum password length is too short") < main.index("Accounts never lock")  # high before medium
@@ -94,9 +94,9 @@ def test_all_passed_only_when_every_check_passed() -> None:
 
 def test_not_checked_is_visible_in_the_tiles_and_reasons_are_translated() -> None:
     blind = _scan(FIXED, coverage={"directory_objects": CoverageLevel.NONE})
-    assert 'data-tile="not_assessed">3<' in render_report(blind, [blind], "en")
+    assert 'data-tile="not_assessed">5<' in render_report(blind, [blind], "en")
     ar = render_report(blind, [blind], "ar")
-    assert 'data-tile="not_assessed">3<' in ar
+    assert 'data-tile="not_assessed">5<' in ar
     assert "coverage directory_objects is none" not in ar and "لم تُجمع بيانات" in ar
     clean = _scan(FIXED)
     assert 'data-tile="not_assessed"' not in render_report(clean, [clean], "en")
@@ -120,6 +120,18 @@ def test_ecc_control_view_in_both_languages() -> None:
     assert 'data-control="2-2-3-2" data-evidence="not_assessed"' in ar and "فاشل" in ar
     fixed = _scan(FIXED)
     assert 'data-control="2-2-3-1" data-evidence="technical_evidence_pass"' in render_report(fixed, [fixed], "en")
+
+
+def test_account_findings_name_the_account() -> None:
+    snap = make_snapshot(make_domain(**FIXED), make_user("temp.intern", rid=1105, passwd_notreqd=True),
+                         collected_at=datetime(2026, 10, 1, tzinfo=UTC))
+    scan = build_scan(snap, run_all(snap), None)
+    en = render_report(scan, [scan], "en")
+    assert "Account can be used with an empty password <span class=\"muted\">· <bdi dir=\"ltr\">temp.intern</bdi></span>" in en
+    assert "<dt>Account</dt>" in en
+    ar = render_report(scan, [scan], "ar")
+    assert "<dt>الحساب</dt>" in ar
+    assert '<bdi dir="ltr">Set-ADUser &lt;account&gt; -PasswordNotRequired $false</bdi>' in ar  # the command stays in order
 
 
 def test_mode_label_follows_the_scan() -> None:

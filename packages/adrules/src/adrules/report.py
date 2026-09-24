@@ -27,7 +27,7 @@ LABELS: dict[str, dict[str, str]] = {
         "all_passed": "No problems found. All checks passed.", "no_problems": "No problems found in the checks that ran.",
         "new": "New", "open": "Still open", "resolved": "Fixed", "not_reassessed": "not re-checked in this scan",
         "found": "What we found", "why": "Why it matters", "fix": "How to fix", "details": "Details",
-        "setting": "Setting", "current": "Current value", "expected": "Required", "last_seen": "Last seen value",
+        "account": "Account", "setting": "Setting", "current": "Current value", "expected": "Required", "last_seen": "Last seen value",
         "check_id": "Check", "object": "Object", "ecc": "NCA ECC-2:2024", "attack": "MITRE ATT&CK", "source": "Source",
         "all_checks": "All checks", "check": "Check", "status": "Result", "reason": "Note",
         "history": "Scan history", "date": "Date", "h_problems": "Problems", "h_new": "New", "h_open": "Still open",
@@ -45,7 +45,7 @@ LABELS: dict[str, dict[str, str]] = {
         "all_passed": "لا توجد مشكلات. نجحت جميع الفحوصات.", "no_problems": "لا توجد مشكلات في الفحوصات التي نُفِّذت.",
         "new": "جديدة", "open": "ما زالت مفتوحة", "resolved": "مُعالَجة", "not_reassessed": "لم يُعَد فحصها في عملية الفحص هذه",
         "found": "ما وجدناه", "why": "الأهمية", "fix": "طريقة المعالجة", "details": "تفاصيل",
-        "setting": "الإعداد", "current": "القيمة الحالية", "expected": "المطلوب", "last_seen": "آخر قيمة",
+        "account": "الحساب", "setting": "الإعداد", "current": "القيمة الحالية", "expected": "المطلوب", "last_seen": "آخر قيمة",
         "check_id": "الفحص", "object": "العنصر", "ecc": "ECC-2:2024", "attack": "MITRE ATT&CK", "source": "المصدر",
         "all_checks": "جميع الفحوصات", "check": "الفحص", "status": "النتيجة", "reason": "ملاحظة",
         "history": "سجل عمليات الفحص", "date": "التاريخ", "h_problems": "مشكلات", "h_new": "جديدة", "h_open": "مفتوحة",
@@ -95,7 +95,7 @@ def reason_text(reason: str | None, lang: str) -> str:
 
 
 # A run of Latin text (a GPMC path, a setting name, a number) inside Arabic text.
-_LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 >.,:/'_\-]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
+_LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 <>.,:/'_$=\-]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
 
 
 def isolate_ltr(text: str) -> Markup:

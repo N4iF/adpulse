@@ -12,7 +12,7 @@ import yaml
 from pydantic import BaseModel, Field, field_validator
 
 from adrules.finding import CheckResult, Confidence, Finding, Localized, Severity, Status
-from adsnap.model import COVERAGE_KEYS, ADObject, CoverageLevel, Snapshot
+from adsnap.model import COVERAGE_KEYS, ADObject, CoverageLevel, ObjectType, Snapshot
 
 
 class NotAssessed(Exception):  # noqa: N818 - reads as a result, like Status.NOT_ASSESSED
@@ -74,6 +74,17 @@ def finding(meta: RuleMeta, obj: ADObject, evidence: dict[str, Any], *, confiden
         attack_techniques=meta.attack_techniques,
         confidence=confidence,
     )
+
+
+def user_accounts(snapshot: Snapshot, *fields: str) -> list[ADObject]:
+    """User accounts whose `fields` were collected, sorted by name; NotAssessed when there are none."""
+    users = snapshot.by_type(ObjectType.USER)
+    if not users:
+        raise NotAssessed("no user accounts were collected")
+    known = [u for u in users if all(u.derived.get(f) is not None for f in fields)]
+    if not known:
+        raise NotAssessed(f"{', '.join(fields)} could not be read on any user account")
+    return sorted(known, key=lambda u: u.name.lower())
 
 
 def load_catalog() -> list[Rule]:

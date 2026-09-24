@@ -45,6 +45,8 @@ def test_missing_value_is_not_assessed_never_fail_or_pass(rule_id: str, field: s
 
 def test_remediation_is_one_sentence_plus_the_gpo_path_in_both_languages() -> None:
     for r in load_catalog():
+        if not r.meta.id.startswith("PWD"):
+            continue
         for text in (r.meta.remediation.en, r.meta.remediation.ar):
             first, path = text.split("\n")
             assert "Default Domain Policy" in first and "gpupdate /force" in first
@@ -53,11 +55,11 @@ def test_remediation_is_one_sentence_plus_the_gpo_path_in_both_languages() -> No
 
 def test_fresh_windows_domain_fails_pwd_01_and_pwd_04_only() -> None:
     snap = make_snapshot(make_domain(min_password_length=7, password_complexity=True, lockout_threshold=0))
-    results = {r.meta.id: run_rule(r, snap, RuleContext(mode="standard")).status for r in load_catalog()}
+    results = {r.meta.id: run_rule(r, snap, RuleContext(mode="standard")).status for r in load_catalog() if r.meta.id.startswith("PWD")}
     assert results == {"PWD-01": Status.FAIL, "PWD-02": Status.PASS, "PWD-04": Status.FAIL}
 
 
 def test_weak_domain_fails_all_three() -> None:
     snap = make_snapshot(make_domain(min_password_length=6, password_complexity=False, lockout_threshold=0))
-    results = [run_rule(r, snap, RuleContext(mode="standard")) for r in load_catalog()]
+    results = [run_rule(r, snap, RuleContext(mode="standard")) for r in load_catalog() if r.meta.id.startswith("PWD")]
     assert [x.status for x in results] == [Status.FAIL, Status.FAIL, Status.FAIL]

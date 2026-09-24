@@ -89,8 +89,8 @@ def test_unknown_coverage_key_rejected() -> None:
 
 def test_catalog_rules_have_bilingual_texts_and_ecc_mapping() -> None:
     rules = load_catalog()
-    assert [r.meta.id for r in rules] == ["PWD-01", "PWD-02", "PWD-04"]
+    assert [r.meta.id for r in rules] == ["ACC-01", "KRB-02", "PWD-01", "PWD-02", "PWD-04"]
     for r in rules:
         assert r.meta.title.ar and r.meta.why_it_matters.ar and r.meta.remediation.ar
-        assert r.meta.control_mappings["nca_ecc_2_2024"] == ["2-2-3-1"]
+        assert r.meta.control_mappings["nca_ecc_2_2024"]  # every check gives ECC technical evidence
         assert r.meta.privilege_required == "standard"

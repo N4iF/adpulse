@@ -77,7 +77,7 @@
 {% for e in to_fix %}
 {% set f = e.finding %}
 <section class="card {{ f.severity.value }}" data-rule="{{ f.rule_id }}" data-state="{{ e.state }}">
-  <h3>{{ f.title[lang]|bidi }}</h3>
+  <h3>{{ f.title[lang]|bidi }}{% if f.affected_object_type.value != "domain" %} <span class="muted">· <bdi dir="ltr">{{ f.affected_name }}</bdi></span>{% endif %}</h3>
   <p class="badges">
     <span class="badge sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span>
     <span class="badge state {{ e.state }}">{{ t[e.state] }}</span>
@@ -106,7 +106,7 @@
 {% for e in fixed %}
 {% set f = e.finding %}
 <section class="card done" data-rule="{{ f.rule_id }}" data-state="resolved">
-  <h3>{{ f.title[lang]|bidi }}</h3>
+  <h3>{{ f.title[lang]|bidi }}{% if f.affected_object_type.value != "domain" %} <span class="muted">· <bdi dir="ltr">{{ f.affected_name }}</bdi></span>{% endif %}</h3>
   <p class="badges"><span class="badge sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span><span class="badge state resolved">{{ t.resolved }}</span></p>
   <dl class="found">
     {% for key, value in f.evidence.items() %}

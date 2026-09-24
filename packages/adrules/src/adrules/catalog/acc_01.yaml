@@ -1,0 +1,18 @@
+id: ACC-01
+category: accounts
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "Account can be used with an empty password"
+  ar: "حساب يمكن استخدامه بكلمة مرور فارغة"
+why_it_matters:
+  en: "This account is allowed to have no password at all, so anyone who knows its name may be able to sign in with it."
+  ar: "يُسمح لهذا الحساب بأن يكون بلا كلمة مرور، فقد يتمكن أي شخص يعرف اسمه من الدخول به."
+remediation:
+  en: "Set a strong password on the account first, then clear the 'password not required' flag (clearing it fails while the password is empty).\nPowerShell (as an administrator): Set-ADAccountPassword <account> -Reset; Set-ADUser <account> -PasswordNotRequired $false"
+  ar: "عيّن كلمة مرور قوية للحساب أولاً، ثم أزل علامة «لا تلزم كلمة مرور» (لا يمكن إزالتها ما دامت كلمة المرور فارغة).\nفي PowerShell (بصلاحيات المسؤول): Set-ADAccountPassword <account> -Reset; Set-ADUser <account> -PasswordNotRequired $false"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-1"]
+attack_techniques: ["T1078.002"]
+matches_pingcastle_rule: "S-PwdNotRequired"
+evidence_source: "userAccountControl bit 0x20 (PASSWD_NOTREQD) on enabled user accounts"

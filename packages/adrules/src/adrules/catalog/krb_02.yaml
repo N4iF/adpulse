@@ -1,0 +1,18 @@
+id: KRB-02
+category: kerberos
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "Account password can be guessed offline (Kerberos pre-authentication is off)"
+  ar: "يمكن تخمين كلمة مرور الحساب دون اتصال (التحقق المسبق في Kerberos معطّل)"
+why_it_matters:
+  en: "Anyone on the network can ask the domain controller for data protected by this account's password and try to guess the password on their own computer — no lockout, and nothing shows on the account."
+  ar: "يستطيع أي شخص في الشبكة أن يطلب من وحدة التحكم بالمجال بيانات محمية بكلمة مرور هذا الحساب ثم يحاول تخمينها على جهازه — دون قفل للحساب ودون أثر يظهر عليه."
+remediation:
+  en: "Turn Kerberos pre-authentication back on, then change the account's password (it may already have been captured).\nActive Directory Users and Computers: the account → Account tab → clear 'Do not require Kerberos preauthentication'.\nPowerShell (as an administrator): Set-ADAccountControl <account> -DoesNotRequirePreAuth $false"
+  ar: "أعد تفعيل التحقق المسبق في Kerberos، ثم غيّر كلمة مرور الحساب (فقد تكون التُقطت من قبل).\nActive Directory Users and Computers: الحساب ← تبويب Account ← أزل تحديد «Do not require Kerberos preauthentication».\nفي PowerShell (بصلاحيات المسؤول): Set-ADAccountControl <account> -DoesNotRequirePreAuth $false"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-4"]
+attack_techniques: ["T1558.004"]
+matches_pingcastle_rule: "S-NoPreAuth"
+evidence_source: "userAccountControl bit 0x400000 (DONT_REQ_PREAUTH) on enabled user accounts"
