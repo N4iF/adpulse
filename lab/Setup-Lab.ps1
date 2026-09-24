@@ -33,8 +33,10 @@ $fqdn = ('{0}.{1}' -f $env:COMPUTERNAME, $dns).ToLower()
 # Lab only: refuse anything but a domain controller of the lab domain.
 if ($dns -ne $LabDomain.ToLower()) { throw "Refusing to run: this domain is '$dns', not the ADPulse lab domain '$LabDomain'." }
 if ((Get-CimInstance Win32_ComputerSystem).DomainRole -lt 4) { throw 'Refusing to run: this machine is not a domain controller.' }
-& git -C $repo check-ignore -q .env lab/dc-ldaps.pem
-if ($LASTEXITCODE -ne 0) { throw 'Refusing to run: .env or lab/dc-ldaps.pem is not git-ignored in this repo.' }
+foreach ($secretFile in '.env', 'lab/dc-ldaps.pem') {
+    & git -C $repo check-ignore -q $secretFile
+    if ($LASTEXITCODE -ne 0) { throw "Refusing to run: $secretFile is not git-ignored in this repo." }
+}
 
 # --- reader account --------------------------------------------------------------------------------
 $script:Rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
