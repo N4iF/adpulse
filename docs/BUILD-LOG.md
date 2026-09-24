@@ -84,3 +84,14 @@ This log, together with the git history, is the honest timeline of the project.
   A one-reviewer check found no overclaiming and four latent edge cases in `ecc_view` (duplicate mapping,
   missing result, a control-specific reason being masked, unknown control ids) — all fixed with tests.
   Live on DC1 (fixed state): `0 fail, 1 pass, 4 not assessed`; from `lab-default.json`: `1 fail`.
+
+## 2026-09-25
+
+- **IT-first report (D37).** Naif: the control view read as noise as a first screen; most users are IT
+  administrators. The template now leads with tiles (problems to fix, fixed since the last scan, checks
+  passed, not checked) and "What to fix" cards (what we found, why it matters, how to fix, a small
+  details line with the check id, NCA ECC control and ATT&CK), most severe first; then "Fixed since the
+  last scan", all checks and the history; the NCA ECC view moved into a collapsed `<details>` that prints
+  in full (`::details-content` in the print stylesheet; checked with Edge print-to-PDF). Report tests
+  rewritten for the new structure; 76 tests pass. Workspace rules gained "users first", "don't follow the
+  plan blindly" and "the repo is the memory".

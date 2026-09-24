@@ -35,6 +35,9 @@ increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
   identical; English re-verified) and a technical-evidence status; `adrules scan` prints a summary line.
   Live on DC1 (fixed state): 2-2-3-1 pass, four not assessed; from `lab-default.json`: 2-2-3-1 fail.
   Plan: `docs/superpowers/plans/2026-09-24-increment2-ecc-view.md`.
+- 2026-09-25: **IT-first report (D37, Naif).** The report now leads with "What to fix" (plain cards: what
+  we found, why it matters, how to fix, most severe first), then "Fixed since the last scan", all checks
+  and the history; the NCA ECC view is a collapsed section opened with one click and printed in full.
 
 ## Next actions (in order)
 

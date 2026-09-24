@@ -135,3 +135,14 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   must never say more than the evidence does; password-policy scans do not review identities. The view is
   computed from the scan results and `control_mappings`; no schema change. Plan:
   `docs/superpowers/plans/2026-09-24-increment2-ecc-view.md`.
+
+## 2026-09-25
+
+- **D37 IT-first reports; the NCA ECC view is optional (Naif).** Most readers are IT administrators, not
+  governance specialists. The first thing a report (and later the dashboard) shows is what is wrong, what
+  was found and how to fix it, in plain language, most severe first; then what was fixed, all checks and
+  the history. The NCA ECC-2:2024 control view is for governance, risk and audit readers: it sits in a
+  collapsed section opened with one click, and it is printed in full. Control ids and ATT&CK techniques
+  stay as a small "Details" line on each problem. Why: control numbers and "not assessed" rows as the
+  first view read as noise to the people who have to fix things. Consequence: every later view follows
+  this order; the limitation sentence stays visible in the footer.

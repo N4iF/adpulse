@@ -18,11 +18,13 @@ uv run adrules scan   # collect → 3 checks → compare with the previous scan 
 
 - **Checks:** PWD-01 minimum password length, PWD-02 password complexity, PWD-04 account lockout (the
   domain password policy).
-- **Output:** `snapshots/<id>.scan.json` and a printable HTML report per language: check status, evidence,
-  remediation, the scan history, and the assessment-limitation sentence.
-- **NCA ECC-2:2024 control view:** the five controls of 2-2-3 (Identity and Access Management) with their
-  official English and Arabic text and a technical-evidence status — fail, pass, or not assessed with the
-  reason and the checks planned for it. Technical evidence only, never compliance.
+- **Output:** `snapshots/<id>.scan.json` and a printable HTML report per language that leads with what to
+  fix: each problem with what was found, why it matters and how to fix it, most severe first; then what
+  was fixed since the last scan, all checks and the scan history (D37).
+- **NCA ECC-2:2024 control view** (one click away, printed in full): the five controls of 2-2-3 (Identity
+  and Access Management) with their official English and Arabic text and a technical-evidence status —
+  fail, pass, or not assessed with the reason and the checks planned for it. Technical evidence only,
+  never compliance.
 - **Lifecycle:** findings are new / open / resolved between scans; a check that could not run never shows
   "resolved".
 - **Verified in the lab:** fresh domain → 2 findings; fix in the Default Domain Policy → the rescan shows
