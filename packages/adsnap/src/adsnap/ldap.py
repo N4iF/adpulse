@@ -1,18 +1,31 @@
-"""Read the domain object over LDAPS with ldap3 (standard user, simple bind with the UPN over TLS)."""
+"""Read the directory over LDAPS with ldap3 (standard user, simple bind with the UPN over TLS)."""
 
 from __future__ import annotations
 
 import ssl
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
-from ldap3 import ALL, BASE, SIMPLE, Connection, Server, Tls
+from ldap3 import ALL, BASE, SIMPLE, SUBTREE, Connection, Server, Tls
+from ldap3.core.exceptions import LDAPException
 
-DOMAIN_ATTRIBUTES = ["objectGUID", "objectSid", "name", "minPwdLength", "pwdProperties", "lockoutThreshold"]
+
+class DirectoryError(RuntimeError):
+    """A directory search failed (the connection itself worked)."""
 
 
-class DomainSource(Protocol):
-    def read_domain(self) -> dict[str, Any]: ...
+Scope = Literal["base", "subtree"]
+
+
+class DirectorySource(Protocol):
+    def base_dn(self) -> str: ...
+
+    def search(self, base: str, ldap_filter: str, attributes: list[str], scope: Scope = "subtree") -> list[dict[str, Any]]: ...
+
+
+def entries_to_rows(entries: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    """ldap3 response dicts -> rows; referrals (searchResRef) and other message types are skipped."""
+    return [{"dn": e["dn"], **e["attributes"]} for e in entries or [] if e.get("type") == "searchResEntry"]
 
 
 def read_ca(path: str) -> str | bytes:
@@ -23,7 +36,7 @@ def read_ca(path: str) -> str | bytes:
     return data
 
 
-class Ldap3DomainSource:
+class Ldap3Source:
     def __init__(
         self,
         host: str,
@@ -45,10 +58,20 @@ class Ldap3DomainSource:
             auto_bind=True, raise_exceptions=True, receive_timeout=timeout,
         )
 
-    def read_domain(self) -> dict[str, Any]:
-        base = str(self._server.info.other["defaultNamingContext"][0])
-        self._conn.search(base, "(objectClass=domainDNS)", search_scope=BASE, attributes=DOMAIN_ATTRIBUTES)
-        entries = [e for e in self._conn.response if e.get("type") == "searchResEntry"]
-        if not entries:
-            raise LookupError(f"domain object {base} not found")
-        return {"dn": entries[0]["dn"], **entries[0]["attributes"]}
+    def base_dn(self) -> str:
+        return str(self._server.info.other["defaultNamingContext"][0])
+
+    def search(self, base: str, ldap_filter: str, attributes: list[str], scope: Scope = "subtree") -> list[dict[str, Any]]:
+        if scope not in ("base", "subtree"):
+            raise ValueError(f"unsupported search scope {scope!r}")
+        try:
+            if scope == "base":
+                self._conn.search(base, ldap_filter, search_scope=BASE, attributes=attributes)
+                entries = self._conn.response
+            else:
+                entries = self._conn.extend.standard.paged_search(
+                    base, ldap_filter, search_scope=SUBTREE, attributes=attributes, paged_size=500, generator=False,
+                )
+        except LDAPException as exc:
+            raise DirectoryError(f"search {ldap_filter} failed: {exc}") from exc
+        return entries_to_rows(entries)

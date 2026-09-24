@@ -1,4 +1,23 @@
-from adsnap.derive import derive_domain
+from adsnap.derive import UAC_DONT_REQ_PREAUTH, UAC_PASSWD_NOTREQD, derive_domain, derive_user
+
+DOM = "S-1-5-21-1-2-3"
+
+
+def test_derive_user_flags() -> None:
+    d = derive_user({"sAMAccountName": "svc_legacy", "userAccountControl": 512 | UAC_DONT_REQ_PREAUTH | UAC_PASSWD_NOTREQD}, sid=f"{DOM}-1105")
+    assert d == {"enabled": True, "is_builtin": False, "passwd_notreqd": True, "asrep_roastable": True}
+    assert derive_user({"sAMAccountName": "a", "userAccountControl": [514]}, sid=f"{DOM}-1106")["enabled"] is False
+
+
+def test_derive_user_builtin_accounts() -> None:
+    assert derive_user({"sAMAccountName": "Guest", "userAccountControl": 66082}, sid=f"{DOM}-501")["is_builtin"] is True
+    assert derive_user({"sAMAccountName": "krbtgt_12345", "userAccountControl": 514}, sid=f"{DOM}-1200")["is_builtin"] is True
+    assert derive_user({"sAMAccountName": "Administrator", "userAccountControl": 66048}, sid=f"{DOM}-500")["is_builtin"] is True
+
+
+def test_derive_user_without_user_account_control_is_unknown_not_false() -> None:
+    assert derive_user({"sAMAccountName": "x"}, sid=None) == {
+        "enabled": None, "is_builtin": False, "passwd_notreqd": None, "asrep_roastable": None}
 
 
 def test_derive_domain_reads_policy_attributes() -> None:

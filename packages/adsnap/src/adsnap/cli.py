@@ -52,7 +52,7 @@ def collect_from_env(insecure_lab: bool = False, *, dotenv: Path = Path(".env"))
     from ldap3.core.exceptions import LDAPException
 
     from adsnap import collector
-    from adsnap.ldap import Ldap3DomainSource
+    from adsnap.ldap import DirectoryError, Ldap3Source
 
     try:
         load_dotenv(dotenv)
@@ -66,12 +66,12 @@ def collect_from_env(insecure_lab: bool = False, *, dotenv: Path = Path(".env"))
     if mode not in ("standard", "privileged"):
         raise typer.BadParameter("ADPULSE_MODE must be standard or privileged")
     try:
-        source = Ldap3DomainSource(
+        source = Ldap3Source(
             env["ADPULSE_DC"], env["ADPULSE_USER"], env["ADPULSE_PASSWORD"],
             ca_cert=env.get("ADPULSE_CA_CERT") or None, insecure_lab=insecure_lab,
         )
         return collector.collect(source, domain_dns=env["ADPULSE_DOMAIN"], mode="privileged" if mode == "privileged" else "standard")
-    except (LDAPException, OSError, LookupError, ValueError) as exc:  # ValueError: an unreadable CA file
+    except (LDAPException, DirectoryError, OSError, LookupError, ValueError) as exc:  # ValueError: an unreadable CA file
         raise DirectoryReadError(f"could not read {env['ADPULSE_DC']} over LDAPS: {exc}") from exc
 
 

@@ -34,6 +34,19 @@ def make_domain(**derived: Any) -> ADObject:
     )
 
 
+def make_user(name: str, *, rid: int, **derived: Any) -> ADObject:
+    d: dict[str, Any] = {"enabled": True, "is_builtin": rid in (500, 501, 502), "passwd_notreqd": False, "asrep_roastable": False}
+    d.update(derived)
+    return ADObject(
+        object_id=f"guid-{name}",
+        object_type=ObjectType.USER,
+        dn=f"CN={name},{DOMAIN_DN}",
+        name=name,
+        object_sid=f"{DOMAIN_SID}-{rid}",
+        derived=d,
+    )
+
+
 def make_snapshot(
     *objects: ADObject,
     coverage: dict[str, CoverageLevel] | None = None,
