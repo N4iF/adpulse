@@ -1,0 +1,20 @@
+id: PWD-04
+category: password_policy
+severity: medium
+requires_coverage: [directory_objects]
+params:
+  max_threshold: 10
+title:
+  en: "Accounts never lock after failed sign-in attempts"
+  ar: "الحسابات لا تُقفل بعد محاولات الدخول الفاشلة"
+why_it_matters:
+  en: "Without lockout, anyone can try passwords against every account again and again without being stopped."
+  ar: "بدون القفل يستطيع أي شخص تجربة كلمات المرور على كل الحسابات مرة بعد مرة دون أن يُوقف."
+remediation:
+  en: "In the Default Domain Policy, set 'Account lockout threshold' between 1 and 10 failed attempts, with a lockout duration and reset counter of at least 15 minutes, then run gpupdate /force.\nGroup Policy Management path: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Account Lockout Policy"
+  ar: "في نهج المجال الافتراضي (Default Domain Policy)، اضبط «Account lockout threshold» بين 1 و10 محاولات فاشلة، مع مدة قفل ومدة إعادة تعيين للعداد لا تقل عن 15 دقيقة، ثم نفّذ gpupdate /force.\nالمسار في إدارة نهج المجموعة: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Account Lockout Policy"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-1"]
+attack_techniques: ["T1110.003"]
+matches_pingcastle_rule: null
+evidence_source: "lockoutThreshold on the domain object"

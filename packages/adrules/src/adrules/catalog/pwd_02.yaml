@@ -1,0 +1,18 @@
+id: PWD-02
+category: password_policy
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "Password complexity is turned off"
+  ar: "شرط تعقيد كلمة المرور معطّل"
+why_it_matters:
+  en: "Without complexity, users can choose simple words and names that are among the first guesses."
+  ar: "بدون شرط التعقيد يستطيع المستخدمون اختيار كلمات وأسماء بسيطة تكون من أول ما يُجرَّب عند التخمين."
+remediation:
+  en: "In the Default Domain Policy, enable 'Password must meet complexity requirements', then run gpupdate /force.\nGroup Policy Management path: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy"
+  ar: "في نهج المجال الافتراضي (Default Domain Policy)، فعّل «Password must meet complexity requirements»، ثم نفّذ gpupdate /force.\nالمسار في إدارة نهج المجموعة: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-1"]
+attack_techniques: ["T1110.001"]
+matches_pingcastle_rule: null
+evidence_source: "pwdProperties bit 0x1 (DOMAIN_PASSWORD_COMPLEX) on the domain object"

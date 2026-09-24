@@ -38,9 +38,17 @@ extend-immutable-calls = ["typer.Option", "typer.Argument", "pathlib.Path"]
 [tool.pytest.ini_options]
 testpaths = ["packages/adsnap/tests", "packages/adrules/tests"]
 addopts = "-q --import-mode=importlib"  # two tests/ packages; default import mode collides
+filterwarnings = [  # ldap3 2.9.1 imports pyasn1 names that pyasn1 0.6 deprecates; harmless
+  "ignore:tagMap is deprecated:DeprecationWarning",
+  "ignore:typeMap is deprecated:DeprecationWarning",
+]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 packages = ["adsnap", "adrules"]
 mypy_path = "packages/adsnap/src:packages/adrules/src"
+
+[[tool.mypy.overrides]]
+module = ["yaml", "ldap3", "ldap3.*"]  # no bundled type stubs; no stub packages added (D35)
+ignore_missing_imports = true

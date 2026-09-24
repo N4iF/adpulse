@@ -1,0 +1,20 @@
+id: PWD-01
+category: password_policy
+severity: high
+requires_coverage: [directory_objects]
+params:
+  min_length: 12
+title:
+  en: "Minimum password length is too short"
+  ar: "الحد الأدنى لطول كلمة المرور قصير جداً"
+why_it_matters:
+  en: "Short passwords can be guessed or cracked quickly; every account in the domain is only as strong as this setting."
+  ar: "كلمات المرور القصيرة يسهل تخمينها أو كسرها بسرعة؛ وقوة كل حساب في المجال محدودة بهذا الإعداد."
+remediation:
+  en: "In the Default Domain Policy, set 'Minimum password length' to at least 12 characters (14 recommended), then run gpupdate /force.\nGroup Policy Management path: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy"
+  ar: "في نهج المجال الافتراضي (Default Domain Policy)، اجعل «Minimum password length» 12 حرفاً على الأقل (يوصى بـ 14)، ثم نفّذ gpupdate /force.\nالمسار في إدارة نهج المجموعة: Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-1"]
+attack_techniques: ["T1110.003"]
+matches_pingcastle_rule: "A-MinPwdLen"  # PingCastle flags fewer than 8 characters; ADPulse's default threshold is 12
+evidence_source: "minPwdLength on the domain object"
