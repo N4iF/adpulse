@@ -9,37 +9,51 @@
           --critical:#ef4444; --high:#f97316; --medium:#eab308; --low:#94a3b8; --ok:#22c55e; --new:#38bdf8; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: "Segoe UI", Tahoma, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
-  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 40px; }
   header h1 { margin: 0 0 4px; font-size: 24px; }
   header p { margin: 0; color: var(--muted); }
-  .limit { color:var(--muted); font-size:13px; border-inline-start:3px solid var(--line); padding-inline-start:10px; margin:14px 0; }
-  .tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin:20px 0 8px; }
+  h2 { margin: 28px 0 12px; }
+  .tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin:20px 0 8px; }
   .tile { background:var(--card); border-radius:10px; padding:14px; }
-  .tile b { display:block; font-size:30px; }
-  .tile.warn { outline: 2px solid var(--medium); }
-  .coverage { color:var(--muted); margin: 0 0 20px; }
+  .tile b { display:block; font-size:32px; }
+  .tile small { color:var(--muted); }
+  .tile.bad b { color:var(--high); } .tile.good b { color:var(--ok); } .tile.warn { outline: 2px solid var(--medium); }
+  .ok-note { background:var(--card); border-radius:10px; padding:16px; color:var(--ok); }
   table { width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden; }
   th, td { padding:10px; text-align:start; border-bottom:1px solid var(--line); vertical-align:top; }
-  .finding { background:var(--card); border-radius:10px; padding:16px; margin:0 0 14px; break-inside: avoid; }
-  .finding h3 { margin:0 0 8px; font-size:18px; }
-  .meta { color:var(--muted); font-size:13px; margin:0 0 10px; }
-  dl { display:grid; grid-template-columns: 190px 1fr; gap:6px 12px; margin:0; }
-  dt { color:var(--muted); }
-  dd { margin:0; }
-  .sev { font-weight:600; }
+  .card { background:var(--card); border-radius:10px; padding:16px 18px; margin:0 0 14px; break-inside: avoid;
+          border-inline-start: 4px solid var(--line); }
+  .card.critical { border-inline-start-color: var(--critical); } .card.high { border-inline-start-color: var(--high); }
+  .card.medium { border-inline-start-color: var(--medium); } .card.low { border-inline-start-color: var(--low); }
+  .card.done { border-inline-start-color: var(--ok); }
+  .card h3 { margin:0 0 6px; font-size:18px; }
+  .badges { margin:0 0 12px; font-size:13px; }
+  .badge { display:inline-block; padding:1px 8px; border-radius:999px; border:1px solid var(--line); margin-inline-end:6px; }
   .sev.critical { color:var(--critical); } .sev.high { color:var(--high); } .sev.medium { color:var(--medium); } .sev.low { color:var(--low); }
   .state.new { color:var(--new); } .state.resolved { color:var(--ok); }
+  .block { margin: 0 0 10px; }
+  .block h4 { margin: 0 0 4px; font-size: 13px; color: var(--muted); text-transform: none; }
+  dl.found { display:grid; grid-template-columns: max-content 1fr; gap:4px 14px; margin:0; }
+  dl.found dt { color:var(--muted); } dl.found dd { margin:0; }
+  .fix { white-space: pre-line; }
+  .refs { color:var(--muted); font-size:12px; margin-top:10px; border-top:1px solid var(--line); padding-top:8px; }
   .status.pass { color:var(--ok); } .status.fail { color:var(--high); }
   code { font-family: Consolas, monospace; }
-  .fix { white-space: pre-line; }
+  .muted { color:var(--muted); font-size:13px; }
+  details.grc { margin-top: 32px; }
+  details.grc > summary { cursor:pointer; display:inline-block; padding:8px 14px; border:1px solid var(--line); border-radius:8px;
+                          background:var(--card); color:var(--muted); }
+  details.grc[open] > summary { color:var(--text); margin-bottom: 12px; }
   .ev.technical_evidence_pass { color:var(--ok); } .ev.technical_evidence_fail { color:var(--high); }
   .ctext { color:var(--muted); font-size:13px; margin-top:4px; }
   .nowrap { white-space: nowrap; }
-  @media (max-width: 640px) { dl { grid-template-columns: 1fr; } }
+  footer { margin-top: 28px; color:var(--muted); font-size:12px; }
+  @media (max-width: 640px) { dl.found { grid-template-columns: 1fr; } }
   @media print {
     body { background:#fff; color:#000; }
-    .tile, table, .finding { background:#fff; border:1px solid #ccc; }
-    .limit, .coverage, .meta, dt { color:#333; }
+    .tile, table, .card, .ok-note, details.grc > summary { background:#fff; border-color:#ccc; }
+    .muted, .refs, .ctext, footer, dl.found dt, .block h4 { color:#333; }
+    details.grc::details-content { content-visibility: visible; display: block; }  /* printed in full even when closed */
   }
 </style>
 </head>
@@ -48,80 +62,99 @@
   <h1>ADPulse نبض — {{ t.title }}</h1>
   <p><bdi dir="ltr">{{ scan.domain }}</bdi> · <bdi dir="ltr">{{ scan.collected_at.strftime("%Y-%m-%d %H:%M") }} UTC</bdi> · {{ mode_label }}</p>
 </header>
-<p class="limit">{{ limitation|bidi }}</p>
 
 <section class="tiles">
-  <div class="tile">{{ t.checks }}<b data-tile="checks">{{ scan.results|length }}</b></div>
-  <div class="tile">{{ t.failed }}<b data-tile="failed">{{ scan.failed() }}</b></div>
-  <div class="tile">{{ t.new }}<b data-tile="new">{{ scan.count("new") }}</b></div>
-  <div class="tile">{{ t.resolved }}<b data-tile="resolved">{{ scan.count("resolved") }}</b></div>
-  {% set unassessed = scan.results|length - scan.assessed() %}
-  {% if unassessed %}<div class="tile warn">{{ t.not_assessed }}<b data-tile="not_assessed">{{ unassessed }}</b></div>{% endif %}
+  <div class="tile {{ 'bad' if to_fix else 'good' }}">{{ t.to_fix }}<b data-tile="to_fix">{{ to_fix|length }}</b></div>
+  <div class="tile {{ 'good' if fixed else '' }}">{{ t.fixed }}<b data-tile="fixed">{{ fixed|length }}</b></div>
+  <div class="tile">{{ t.passed }}<b data-tile="passed">{{ passed }}</b><small>{{ t.of }} {{ scan.results|length }}</small></div>
+  {% if not_checked %}<div class="tile warn">{{ t.not_checked }}<b data-tile="not_assessed">{{ not_checked }}</b></div>{% endif %}
 </section>
-<p class="coverage">{{ t.assessed }}: {{ scan.assessed() }} {{ t.of }} {{ scan.results|length }}</p>
 
-<h2>{{ t.checks_title }}</h2>
+<h2>{{ t.what_to_fix }}</h2>
+{% if not to_fix %}
+<p class="ok-note">{{ t.all_passed if all_passed else t.no_problems }}</p>
+{% endif %}
+{% for e in to_fix %}
+{% set f = e.finding %}
+<section class="card {{ f.severity.value }}" data-rule="{{ f.rule_id }}" data-state="{{ e.state }}">
+  <h3>{{ f.title[lang]|bidi }}</h3>
+  <p class="badges">
+    <span class="badge sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span>
+    <span class="badge state {{ e.state }}">{{ t[e.state] }}</span>
+    {% if e.not_reassessed %}<span class="muted">{{ t.not_reassessed }}</span>{% endif %}
+  </p>
+  <div class="block">
+    <h4>{{ t.found }}</h4>
+    <dl class="found">
+      {% for key, value in f.evidence.items() %}
+      <dt>{% if key == "current" and e.not_reassessed %}{{ t.last_seen }}{% elif key in t %}{{ t[key] }}{% else %}{{ key }}{% endif %}</dt>
+      <dd><code dir="ltr">{{ value }}</code></dd>
+      {% endfor %}
+    </dl>
+  </div>
+  <div class="block"><h4>{{ t.why }}</h4>{{ f.why_it_matters[lang]|bidi }}</div>
+  <div class="block"><h4>{{ t.fix }}</h4><div class="fix">{{ f.remediation[lang]|bidi }}</div></div>
+  <div class="refs">{{ t.details }}: {{ t.check_id }} <code dir="ltr">{{ f.rule_id }}</code> · {{ t.object }} <bdi dir="ltr">{{ f.affected_name }}</bdi>
+    · {{ t.ecc }} <bdi dir="ltr">{{ f.control_mappings.get("nca_ecc_2_2024", [])|join(", ") }}</bdi>
+    · {{ t.attack }} <bdi dir="ltr">{{ f.attack_techniques|join(", ") }}</bdi>
+    · {{ t.source }}: {{ f.evidence_source|bidi }}</div>
+</section>
+{% endfor %}
+
+{% if fixed %}
+<h2>{{ t.fixed_title }}</h2>
+{% for e in fixed %}
+{% set f = e.finding %}
+<section class="card done" data-rule="{{ f.rule_id }}" data-state="resolved">
+  <h3>{{ f.title[lang]|bidi }}</h3>
+  <p class="badges"><span class="badge sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span><span class="badge state resolved">{{ t.resolved }}</span></p>
+  <dl class="found">
+    {% for key, value in f.evidence.items() %}
+    <dt>{% if key == "current" %}{{ t.last_seen }}{% elif key in t %}{{ t[key] }}{% else %}{{ key }}{% endif %}</dt>
+    <dd><code dir="ltr">{{ value }}</code></dd>
+    {% endfor %}
+  </dl>
+</section>
+{% endfor %}
+{% endif %}
+
+<h2>{{ t.all_checks }}</h2>
 <table>
-  <tr><th>{{ t.rule }}</th><th>{{ t.check }}</th><th>{{ t.status }}</th><th>{{ t.reason }}</th></tr>
+  <tr><th>{{ t.check }}</th><th>{{ t.status }}</th><th>{{ t.reason }}</th></tr>
   {% for r in scan.results %}
   <tr data-check="{{ r.rule_id }}" data-status="{{ r.status.value }}">
-    <td><code dir="ltr">{{ r.rule_id }}</code></td>
-    <td>{% if r.rule_id in titles %}{{ titles[r.rule_id][lang]|bidi }}{% else %}{{ r.rule_id }}{% endif %}</td>
+    <td>{% if r.rule_id in titles %}{{ titles[r.rule_id][lang]|bidi }}{% else %}{{ r.rule_id }}{% endif %} <span class="muted"><code dir="ltr">{{ r.rule_id }}</code></span></td>
     <td class="status {{ r.status.value }}">{{ status[r.status.value] }}</td>
     <td>{{ r.reason|reason|bidi }}</td>
   </tr>
   {% endfor %}
 </table>
 
-<h2>{{ t.ecc_title }}</h2>
-<p class="coverage">{{ t.subdomain }} <bdi dir="ltr">{{ subdomain.id }}</bdi>: {{ subdomain.title[lang]|bidi }}</p>
-<table>
-  <tr><th>{{ t.control }}</th><th>{{ t.ev_status }}</th><th>{{ t.checks_title }}</th><th>{{ t.note }}</th></tr>
-  {% for c in controls %}
-  <tr data-control="{{ c.control_id }}" data-evidence="{{ c.status }}">
-    <td><code dir="ltr">{{ c.control_id }}</code><div class="ctext">{{ c.text[lang]|bidi }}</div></td>
-    <td class="ev {{ c.status }}">{{ evidence[c.status] }}</td>
-    <td>{% for k in c.checks %}<div class="nowrap"><code dir="ltr">{{ k.rule_id }}</code> <span class="status {{ k.status.value }}">{{ status[k.status.value] }}</span></div>{% endfor %}</td>
-    <td>{% if c.reason %}{{ c.reason[lang]|bidi }}{% endif %}{% if c.planned %}<div class="ctext">{{ t.planned }}: <bdi dir="ltr">{{ c.planned|join(", ") }}</bdi></div>{% endif %}</td>
-  </tr>
-  {% endfor %}
-</table>
-
-<h2>{{ t.findings }}</h2>
-{% if all_passed and not scan.lifecycle %}
-<p>{{ t.all_passed }}</p>
-{% elif not scan.lifecycle %}
-<p>{{ t.no_findings }}</p>
-{% endif %}
-{% for e in scan.lifecycle %}
-{% set f = e.finding %}
-<section class="finding" data-rule="{{ f.rule_id }}" data-state="{{ e.state }}">
-  <h3>{{ f.title[lang]|bidi }}</h3>
-  <p class="meta">
-    <span class="sev {{ f.severity.value }}">{{ severity[f.severity.value] }}</span> ·
-    <span class="state {{ e.state }}">{{ t[e.state] }}{% if e.not_reassessed %} ({{ t.not_reassessed }}){% endif %}</span> ·
-    <code dir="ltr">{{ f.rule_id }}</code> · {{ t.object }}: <bdi dir="ltr">{{ f.affected_name }}</bdi>
-  </p>
-  <dl>
-    {% for key, value in f.evidence.items() %}
-    <dt>{% if key == "current" and (e.state == "resolved" or e.not_reassessed) %}{{ t.last_seen }}{% elif key in t %}{{ t[key] }}{% else %}{{ key }}{% endif %}</dt>
-    <dd><code dir="ltr">{{ value }}</code></dd>
-    {% endfor %}
-    <dt>{{ t.evidence_source }}</dt><dd>{{ f.evidence_source|bidi }}</dd>
-    <dt>{{ t.why }}</dt><dd>{{ f.why_it_matters[lang]|bidi }}</dd>
-    <dt>{{ t.fix }}</dt><dd class="fix">{{ f.remediation[lang]|bidi }}</dd>
-    <dt>{{ t.ecc }}</dt><dd><bdi dir="ltr">{{ f.control_mappings.get("nca_ecc_2_2024", [])|join(", ") }}</bdi></dd>
-    <dt>{{ t.attack }}</dt><dd><bdi dir="ltr">{{ f.attack_techniques|join(", ") }}</bdi></dd>
-  </dl>
-</section>
-{% endfor %}
-
 <h2>{{ t.history }}</h2>
-<p class="coverage">{{ t.history_note|bidi }}</p>
 <table>
-  <tr><th>{{ t.date }}</th><th>{{ t.failed }}</th><th>{{ t.new }}</th><th>{{ t.open }}</th><th>{{ t.resolved }}</th></tr>
+  <tr><th>{{ t.date }}</th><th>{{ t.h_problems }}</th><th>{{ t.h_new }}</th><th>{{ t.h_open }}</th><th>{{ t.h_fixed }}</th></tr>
   {% for h in history %}
   <tr><td><bdi dir="ltr">{{ h.collected_at.strftime("%Y-%m-%d %H:%M") }}</bdi></td><td>{{ h.failed() }}</td><td>{{ h.count("new") }}</td><td>{{ h.count("open") }}</td><td>{{ h.count("resolved") }}</td></tr>
   {% endfor %}
 </table>
+
+<details class="grc">
+  <summary>{{ t.grc_open }}</summary>
+  <h2>{{ t.ecc_title }}</h2>
+  <p class="muted">{{ t.subdomain }} <bdi dir="ltr">{{ subdomain.id }}</bdi>: {{ subdomain.title[lang]|bidi }}</p>
+  <table>
+    <tr><th>{{ t.control }}</th><th>{{ t.ev_status }}</th><th>{{ t.checks_col }}</th><th>{{ t.note }}</th></tr>
+    {% for c in controls %}
+    <tr data-control="{{ c.control_id }}" data-evidence="{{ c.status }}">
+      <td><code dir="ltr">{{ c.control_id }}</code><div class="ctext">{{ c.text[lang]|bidi }}</div></td>
+      <td class="ev {{ c.status }}">{{ evidence[c.status] }}</td>
+      <td>{% for k in c.checks %}<div class="nowrap"><code dir="ltr">{{ k.rule_id }}</code> <span class="status {{ k.status.value }}">{{ status[k.status.value] }}</span></div>{% endfor %}</td>
+      <td>{% if c.reason %}{{ c.reason[lang]|bidi }}{% endif %}{% if c.planned %}<div class="ctext">{{ t.planned }}: <bdi dir="ltr">{{ c.planned|join(", ") }}</bdi></div>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted">{{ t.history_note|bidi }}</p>
+</details>
+
+<footer>{{ limitation|bidi }}</footer>
 </main></body></html>

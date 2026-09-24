@@ -20,32 +20,41 @@ LIMITATION = {
 
 LABELS: dict[str, dict[str, str]] = {
     "en": {
-        "title": "AD security control assessment", "checks": "Checks run", "failed": "Failed", "new": "New",
-        "resolved": "Resolved", "open": "Open", "not_assessed": "Not assessed", "findings": "Findings", "checks_title": "Checks",
-        "history": "Scan history", "all_passed": "No findings. All checks passed.", "no_findings": "No findings.",
-        "assessed": "Checks assessed", "of": "of", "why": "Why it matters", "fix": "How to fix",
-        "ecc": "NCA ECC-2:2024 technical evidence", "attack": "MITRE ATT&CK", "state": "State", "status": "Status",
-        "severity": "Severity", "rule": "Rule", "check": "Check", "reason": "Reason", "evidence": "Evidence",
-        "evidence_source": "Evidence source", "not_reassessed": "not re-assessed in this scan", "date": "Date",
-        "setting": "Setting", "current": "Current", "expected": "Expected", "last_seen": "Last seen",
-        "object": "Object",
-        "history_note": "Dated record of periodic assessment; supports NCA ECC-2:2024 2-2-3-5 (periodic review of identities and access rights).",
+        "title": "Active Directory security assessment",
+        "to_fix": "Problems to fix", "fixed": "Fixed since the last scan", "passed": "Checks passed",
+        "not_checked": "Not checked", "of": "of",
+        "what_to_fix": "What to fix", "fixed_title": "Fixed since the last scan",
+        "all_passed": "No problems found. All checks passed.", "no_problems": "No problems found in the checks that ran.",
+        "new": "New", "open": "Still open", "resolved": "Fixed", "not_reassessed": "not re-checked in this scan",
+        "found": "What we found", "why": "Why it matters", "fix": "How to fix", "details": "Details",
+        "setting": "Setting", "current": "Current value", "expected": "Required", "last_seen": "Last seen value",
+        "check_id": "Check", "object": "Object", "ecc": "NCA ECC-2:2024", "attack": "MITRE ATT&CK", "source": "Source",
+        "all_checks": "All checks", "check": "Check", "status": "Result", "reason": "Note",
+        "history": "Scan history", "date": "Date", "h_problems": "Problems", "h_new": "New", "h_open": "Still open",
+        "h_fixed": "Fixed",
+        "grc_open": "NCA ECC-2:2024 view — for governance, risk and audit teams",
+        "history_note": "The scan history above is a dated record of periodic assessment; it supports 2-2-3-5 (periodic review of identities and access rights).",
         "ecc_title": "NCA ECC-2:2024 technical evidence", "subdomain": "Subdomain", "control": "Control",
-        "ev_status": "Technical evidence", "note": "Note", "planned": "Planned checks",
+        "ev_status": "Technical evidence", "checks_col": "Checks", "note": "Note", "planned": "Planned checks",
     },
     "ar": {
-        "title": "تقييم ضوابط أمن Active Directory", "checks": "الفحوصات المنفذة", "failed": "فاشلة",
-        "new": "جديدة", "resolved": "مُعالَجة", "open": "مفتوحة", "not_assessed": "لم تُقيَّم", "findings": "النتائج",
-        "checks_title": "الفحوصات", "history": "سجل عمليات الفحص", "all_passed": "لا توجد نتائج. نجحت جميع الفحوصات.", "no_findings": "لا توجد نتائج.",
-        "assessed": "الفحوصات المُقيَّمة", "of": "من", "why": "الأهمية", "fix": "طريقة المعالجة",
-        "ecc": "دليل تقني للضوابط الأساسية للأمن السيبراني ECC-2:2024", "attack": "MITRE ATT&CK", "state": "الحالة",
-        "status": "النتيجة", "severity": "الخطورة", "rule": "القاعدة", "check": "الفحص", "reason": "السبب",
-        "evidence": "الدليل", "evidence_source": "مصدر الدليل", "not_reassessed": "لم يُعَد تقييمها في عملية الفحص هذه",
-        "date": "التاريخ", "setting": "الإعداد", "current": "القيمة الحالية", "expected": "المطلوب",
-        "last_seen": "آخر قيمة", "object": "العنصر",
-        "history_note": "سجل مؤرَّخ للتقييم الدوري، يدعم الضابط 2-2-3-5 من ECC-2:2024 (المراجعة الدورية لهويات الدخول والصلاحيات).",
+        "title": "تقييم أمن Active Directory",
+        "to_fix": "مشكلات تحتاج إلى معالجة", "fixed": "مُعالَجة منذ الفحص السابق", "passed": "فحوصات ناجحة",
+        "not_checked": "لم تُفحص", "of": "من",
+        "what_to_fix": "ما يجب إصلاحه", "fixed_title": "ما عولج منذ الفحص السابق",
+        "all_passed": "لا توجد مشكلات. نجحت جميع الفحوصات.", "no_problems": "لا توجد مشكلات في الفحوصات التي نُفِّذت.",
+        "new": "جديدة", "open": "ما زالت مفتوحة", "resolved": "مُعالَجة", "not_reassessed": "لم يُعَد فحصها في عملية الفحص هذه",
+        "found": "ما وجدناه", "why": "الأهمية", "fix": "طريقة المعالجة", "details": "تفاصيل",
+        "setting": "الإعداد", "current": "القيمة الحالية", "expected": "المطلوب", "last_seen": "آخر قيمة",
+        "check_id": "الفحص", "object": "العنصر", "ecc": "ECC-2:2024", "attack": "MITRE ATT&CK", "source": "المصدر",
+        "all_checks": "جميع الفحوصات", "check": "الفحص", "status": "النتيجة", "reason": "ملاحظة",
+        "history": "سجل عمليات الفحص", "date": "التاريخ", "h_problems": "مشكلات", "h_new": "جديدة", "h_open": "مفتوحة",
+        "h_fixed": "مُعالَجة",
+        "grc_open": "عرض الضوابط الأساسية للأمن السيبراني ECC-2:2024 — لفرق الحوكمة والمخاطر والتدقيق",
+        "history_note": "سجل عمليات الفحص أعلاه توثيق مؤرَّخ للتقييم الدوري، يدعم الضابط 2-2-3-5 (المراجعة الدورية لهويات الدخول والصلاحيات).",
         "ecc_title": "دليل تقني للضوابط الأساسية للأمن السيبراني ECC-2:2024", "subdomain": "المكوّن الفرعي",
-        "control": "الضابط", "ev_status": "الدليل التقني", "note": "ملاحظة", "planned": "فحوصات مخطط لها",
+        "control": "الضابط", "ev_status": "الدليل التقني", "checks_col": "الفحوصات", "note": "ملاحظة",
+        "planned": "فحوصات مخطط لها",
     },
 }
 
@@ -101,6 +110,9 @@ def isolate_ltr(text: str) -> Markup:
     return Markup("").join(parts)
 
 
+SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+
+
 def render_report(scan: ScanResult, history: list[ScanResult], lang: str = "en") -> str:
     if lang not in LABELS:
         raise ValueError(f"unsupported language {lang!r}")
@@ -109,10 +121,14 @@ def render_report(scan: ScanResult, history: list[ScanResult], lang: str = "en")
     env.filters["bidi"] = isolate_ltr if lang == "ar" else escape
     env.filters["reason"] = lambda reason: reason_text(reason, lang)
     template = env.from_string(files("adrules").joinpath("templates/report.html.j2").read_text(encoding="utf-8"))
+    to_fix = sorted((e for e in scan.lifecycle if e.state != "resolved"), key=lambda e: SEVERITY_ORDER[e.finding.severity.value])
     return template.render(
         scan=scan, history=history[-10:], lang=lang, direction="rtl" if lang == "ar" else "ltr",
         t=LABELS[lang], limitation=LIMITATION[lang], mode_label=MODE[lang].get(scan.mode, scan.mode),
         severity=SEVERITY[lang], status=STATUS[lang], evidence=EVIDENCE[lang], titles=titles,
         controls=ecc_view(scan.results), subdomain=load_subdomain(),
+        to_fix=to_fix, fixed=[e for e in scan.lifecycle if e.state == "resolved"],
+        passed=sum(1 for r in scan.results if r.status is Status.PASS),
+        not_checked=len(scan.results) - scan.assessed(),
         all_passed=bool(scan.results) and all(r.status is Status.PASS for r in scan.results),
     )

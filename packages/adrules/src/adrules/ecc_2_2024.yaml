@@ -39,5 +39,5 @@ controls:
       ar: "المراجعة الدورية لهويات الدخول والصلاحيات."
     planned: []
     reason:
-      en: "Checks for the periodic review of identities and access rights come in later increments; the scan history below is the dated record of periodic assessment that supports this control."
-      ar: "فحوصات المراجعة الدورية لهويات الدخول والصلاحيات تأتي في مراحل لاحقة؛ وسجل عمليات الفحص أدناه هو السجل المؤرَّخ للتقييم الدوري الذي يدعم هذا الضابط."
+      en: "Checks for the periodic review of identities and access rights come in later increments; the scan history in this report is the dated record of periodic assessment that supports this control."
+      ar: "فحوصات المراجعة الدورية لهويات الدخول والصلاحيات تأتي في مراحل لاحقة؛ وسجل عمليات الفحص في هذا التقرير هو السجل المؤرَّخ للتقييم الدوري الذي يدعم هذا الضابط."

@@ -20,37 +20,58 @@ def _scan(domain: dict[str, Any], previous: ScanResult | None = None, day: int =
     return build_scan(snap, run_all(snap), previous)
 
 
-def _without_details(html: str) -> str:
-    return re.sub(r"<details.*?</details>", "", html, flags=re.S)
+def _grc(html: str) -> str:
+    match = re.search(r'<details class="grc".*?</details>', html, flags=re.S)
+    assert match, "the NCA ECC view must be in its own collapsible section"
+    return match.group(0)
 
 
-def test_english_report_shows_findings_checks_and_counts() -> None:
+def _without_grc(html: str) -> str:
+    return html.replace(_grc(html), "")
+
+
+def test_it_first_view_shows_what_to_fix_before_anything_else() -> None:
     s1 = _scan(FRESH)
     html = render_report(s1, [s1], "en")
-    assert '<html lang="en" dir="ltr">' in html
-    assert "Minimum password length is too short" in html
-    assert 'data-tile="checks">3<' in html and 'data-tile="failed">2<' in html and 'data-tile="new">2<' in html
-    assert 'data-check="PWD-02" data-status="pass"' in html
-    assert "Standard-user assessment" in html
+    assert '<html lang="en" dir="ltr">' in html and "Standard-user assessment" in html
+    assert 'data-tile="to_fix">2<' in html and 'data-tile="fixed">0<' in html and 'data-tile="passed">1<' in html
+    main = _without_grc(html)
+    assert main.index("What to fix") < main.index("All checks") < main.index("Scan history")
+    assert main.index("Minimum password length is too short") < main.index("Accounts never lock")  # high before medium
+    for text in ("What we found", "Why it matters", "How to fix", "minPwdLength", "&gt;= 12", "Default Domain Policy"):
+        assert text in main
+    assert 'data-check="PWD-02" data-status="pass"' in main
 
 
-def test_evidence_and_limitation_are_visible_without_opening_anything() -> None:
+def test_ncaecc_view_is_collapsed_by_default_but_printed() -> None:
     s1 = _scan(FRESH)
-    visible = _without_details(render_report(s1, [s1], "en"))
-    assert "2-2-3-1" in visible and "organizational policy/process compliance is not assessed" in visible
-    assert "minPwdLength" in visible and "&gt;= 12" in visible
-    assert "Default Domain Policy" in visible  # the remediation
+    html = render_report(s1, [s1], "en")
+    grc = _grc(html)
+    assert grc.startswith('<details class="grc">')  # closed: no "open" attribute
+    assert "governance, risk and audit teams" in grc
+    assert 'data-control="2-2-3-1" data-evidence="technical_evidence_fail"' in grc
+    assert 'data-control="2-2-3-1"' not in _without_grc(html)
+    assert "details.grc::details-content" in html  # the print stylesheet shows the section when printing
 
 
-def test_arabic_report_is_rtl_and_shows_resolved() -> None:
+def test_limitation_sentence_is_always_visible_and_compliance_is_never_claimed() -> None:
+    s1 = _scan(FRESH)
+    html = render_report(s1, [s1], "en")
+    assert "organizational policy/process compliance is not assessed" in _without_grc(html)
+    lowered = html.lower()
+    assert lowered.count("complian") == 1 and "compliant" not in lowered
+
+
+def test_arabic_report_is_rtl_and_shows_what_was_fixed() -> None:
     s1 = _scan(FRESH)
     s2 = _scan(FIXED, previous=s1, day=2)
     html = render_report(s2, [s1, s2], "ar")
     assert '<html lang="ar" dir="rtl">' in html
     assert "الحد الأدنى لطول كلمة المرور قصير جداً" in html
-    assert 'data-tile="resolved">2<' in html
-    assert "آخر قيمة" in html  # a resolved row shows the last seen value, not the current one
+    assert 'data-tile="fixed">2<' in html and 'data-tile="to_fix">0<' in html
+    assert "آخر قيمة" in html  # a fixed row shows the last seen value, not the current one
     assert "عالية" in html  # severity is translated
+    assert "لا توجد مشكلات" in html
 
 
 def test_arabic_keeps_latin_runs_and_values_left_to_right() -> None:
@@ -58,7 +79,7 @@ def test_arabic_keeps_latin_runs_and_values_left_to_right() -> None:
     html = render_report(s1, [s1], "ar")
     assert '<bdi dir="ltr">Default Domain Policy</bdi>' in html
     assert '<code dir="ltr">&gt;= 12</code>' in html
-    assert "2-2-3-5" in html  # the history is labelled as periodic-review evidence
+    assert '<bdi dir="ltr">&#34;Least Privilege&#34;</bdi>' in html  # quotes keep their place in RTL text
     assert '<bdi dir="ltr">Default Domain Policy</bdi>' not in render_report(s1, [s1], "en")  # only Arabic text is isolated
 
 
@@ -69,10 +90,9 @@ def test_all_passed_only_when_every_check_passed() -> None:
     html = render_report(blind, [blind], "en")
     assert "All checks passed" not in html
     assert 'data-status="not_assessed"' in html and "coverage directory_objects is none" in html
-    assert "0 of 3" in html  # coverage line: checks assessed
 
 
-def test_not_assessed_is_visible_in_the_tiles_and_reasons_are_translated() -> None:
+def test_not_checked_is_visible_in_the_tiles_and_reasons_are_translated() -> None:
     blind = _scan(FIXED, coverage={"directory_objects": CoverageLevel.NONE})
     assert 'data-tile="not_assessed">3<' in render_report(blind, [blind], "en")
     ar = render_report(blind, [blind], "ar")
@@ -82,32 +102,24 @@ def test_not_assessed_is_visible_in_the_tiles_and_reasons_are_translated() -> No
     assert 'data-tile="not_assessed"' not in render_report(clean, [clean], "en")
 
 
-def test_not_reassessed_row_shows_last_seen_value() -> None:
+def test_not_rechecked_problem_stays_in_what_to_fix_with_its_last_seen_value() -> None:
     s1 = _scan(WEAK)
     s2 = _scan(WEAK, previous=s1, day=2, coverage={"directory_objects": CoverageLevel.NONE})
     html = render_report(s2, [s1, s2], "en")
-    assert "not re-assessed in this scan" in html and "Last seen" in html and "<dt>Current</dt>" not in html
+    assert 'data-tile="to_fix">3<' in html
+    assert "not re-checked in this scan" in html and "Last seen value" in html and "<dt>Current value</dt>" not in html
 
 
 def test_ecc_control_view_in_both_languages() -> None:
     fresh = _scan(FRESH)
-    html = render_report(fresh, [fresh], "en")
-    assert 'data-control="2-2-3-1" data-evidence="technical_evidence_fail"' in html
-    assert 'data-control="2-2-3-5" data-evidence="not_assessed"' in html
-    assert "Single-factor authentication based on username and password." in html
-    assert "Planned checks" in html and "ACL-01" in html
-    ar = render_report(fresh, [fresh], "ar")
+    grc = _grc(render_report(fresh, [fresh], "en"))
+    assert 'data-control="2-2-3-5" data-evidence="not_assessed"' in grc
+    assert "Single-factor authentication based on username and password." in grc
+    assert "Planned checks" in grc and "ACL-01" in grc and "2-2-3-5" in grc
+    ar = _grc(render_report(fresh, [fresh], "ar"))
     assert 'data-control="2-2-3-2" data-evidence="not_assessed"' in ar and "فاشل" in ar
-    assert '<bdi dir="ltr">&#34;Least Privilege&#34;</bdi>' in ar  # quotes keep their place in RTL text
     fixed = _scan(FIXED)
     assert 'data-control="2-2-3-1" data-evidence="technical_evidence_pass"' in render_report(fixed, [fixed], "en")
-
-
-def test_the_report_never_claims_compliance() -> None:
-    fresh = _scan(FRESH)
-    html = render_report(fresh, [fresh], "en").lower()
-    assert html.count("complian") == 1  # only in the limitation sentence: "... compliance is not assessed."
-    assert "compliant" not in html
 
 
 def test_mode_label_follows_the_scan() -> None:
