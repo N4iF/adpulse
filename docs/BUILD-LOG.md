@@ -56,4 +56,14 @@ This log, together with the git history, is the honest timeline of the project.
 - Naif's decisions: no lab script changes the password policy — the demo starts from the fresh domain and
   the fix is made by hand in the Default Domain Policy (D33); an AI "explain" button is a later feature
   (D34). Docs aligned (spec, catalog, architecture, SETUP, CONTRIBUTING, package READMEs, lab README).
-  No engine code yet; next is MVP-1 Task 1.
+- MVP-1 Tasks 1–7 built test-first, one commit per task: model, builders, Finding, runner with
+  `NotAssessed` and the privilege gate, PWD-01/02/04 (remediation through the Default Domain Policy;
+  PingCastle cross-reference `A-MinPwdLen` verified), collector (missing attributes → `None` + partial
+  coverage; PEM or DER CA; robust `.env`), `adrules scan` (guard across many failed scans, previous scan
+  of the same domain, duplicate scans refused, EN and AR reports with check table, coverage line and
+  visible evidence and limitation, RTL isolation of Latin text), `adrules evaluate --out`, and
+  `lab/Setup-Lab.ps1` (generated reader password → `.env`, Schannel-CSP LDAPS certificate, no NTDS
+  restart, PEM export). A three-lens code review (correctness, runtime/packaging, rules/Arabic) found 11
+  issues, all fixed with tests; a test-name collision between the two `tests` packages had hidden the
+  adrules CLI tests (files renamed, rule added to CONTRIBUTING). 60 passed, 2 skipped; ruff and mypy
+  clean. Not yet run against the real DC: Task 8 (`Setup-Lab.ps1`) waits for Naif's OK.
