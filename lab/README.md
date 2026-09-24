@@ -31,7 +31,7 @@ everywhere (LDAPS validates the host name); older documents that say `DC01` mean
 | DC time source | internet NTP (`time.windows.com`, `pool.ntp.org`), set 2026-09-24 |
 | Python on DC1 | 3.12.0 (per-user install), used by `uv` |
 | Snapshot `clean` taken | 2026-09-24 |
-| Snapshot `seeded` taken | ______ (after `Setup-Lab.ps1`) |
+| Snapshot `seeded` taken | 2026-09-24 (after `Setup-Lab.ps1`, before any scan) |
 
 ## Snapshot discipline
 

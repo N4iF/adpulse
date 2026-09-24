@@ -6,12 +6,30 @@ ADPulse turns Active Directory state into security-control evidence and remediat
 > Security teams invest heavily in runtime detection and response, but identity and configuration
 > weaknesses can persist underneath those controls and need separate posture assessment.
 
-Status: **pre-alpha, design complete, engine under construction** (September 2026).
+Status: **pre-alpha — MVP-1 works end to end in the lab** (September 2026).
+
+## What works today (MVP-1, 2026-09-24)
+
+On the lab domain controller, as an ordinary domain user over LDAPS:
+
+```powershell
+uv run adrules scan   # collect → 3 checks → compare with the previous scan → reports in English and Arabic
+```
+
+- **Checks:** PWD-01 minimum password length, PWD-02 password complexity, PWD-04 account lockout (the
+  domain password policy).
+- **Output:** `snapshots/<id>.scan.json` and a printable HTML report per language: check status, evidence,
+  remediation, NCA ECC-2:2024 technical evidence (2-2-3-1) with its assessment-limitation sentence, and
+  the scan history.
+- **Lifecycle:** findings are new / open / resolved between scans; a check that could not run never shows
+  "resolved".
+- **Verified in the lab:** fresh domain → 2 findings; fix in the Default Domain Policy → the rescan shows
+  both resolved (recorded fixtures and a truth-table test in the repo).
 
 ## What it is designed to do
 
-The packages are skeletons today; the bullets below describe the design, and `PROJECT-STATUS.md` shows
-what exists.
+Only the MVP-1 part above exists today; the bullets below describe the design, which arrives in
+increments (`PROJECT-STATUS.md`).
 
 ```
 AD facts  →  security checks  →  evidence  →  control mapping  →  assessment status

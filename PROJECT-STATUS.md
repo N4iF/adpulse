@@ -5,9 +5,9 @@ non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — MVP-1 first (D31).** Three password-policy checks working end to end inside the lab DC:
-collect → rules → findings → HTML report → fix → rescan shows resolved. Everything else is a later,
-numbered increment. Development runs inside the lab DC `DC1` in VMware (D30, D32).
+**Phase 1 — MVP-1 done (2026-09-24); next: increment 2.** Three password-policy checks work end to end
+inside the lab DC: collect → rules → findings → HTML reports → fix → rescan shows resolved. Everything
+else arrives as numbered increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
 
 ## Done
 
@@ -24,24 +24,27 @@ numbered increment. Development runs inside the lab DC `DC1` in VMware (D30, D32
   LDAPS, `adrules scan` (lifecycle diff, EN and AR reports), `lab/Setup-Lab.ps1` and the ground truth.
   60 tests pass (2 truth-table tests skip until the lab fixtures exist); ruff and mypy strict clean.
   Verified offline end to end from saved snapshots (2 new → 2 resolved; both reports checked in Edge).
-  Not yet run against the real DC: there is no reader account or LDAPS certificate until Task 8.
+- 2026-09-24: **MVP-1 done in the lab (Task 8).** `Setup-Lab.ps1` created `adpulse.reader` and LDAPS
+  (no NTDS restart); snapshot `seeded` taken; live scan as the reader over validated LDAPS: 2 failed,
+  new 2 (1.4 s); Naif fixed the Default Domain Policy by hand (14 / on / 5, 15 min); rescan: 0 failed,
+  resolved 2. Fixtures `lab-default.json` and `lab-fixed.json` recorded; truth table green; 62 tests
+  pass, ruff and mypy clean.
 
-## Next actions (in order) — plan: `docs/superpowers/plans/2026-09-24-mvp1.md`
+## Next actions (in order)
 
 Tags: **[agent]** = an AI session; **[Naif]** = Naif (VMware, Group Policy Management, approvals).
-Read the plan's "Corrections" section first; it overrides the code blocks where they differ.
+The lab is now in the fixed state; to rehearse the demo, revert to snapshot `seeded`, then `git pull`.
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Task 8 Step 1: run `.\lab\Setup-Lab.ps1` in an elevated PowerShell on DC1 (changes AD: reader account and LDAPS certificate; Naif's OK first). | [agent on DC1 + Naif] |
-| 2 | Task 8 Steps 2–7: record `lab-default.json`; Naif takes snapshot `seeded`; scan → 2 new; Naif fixes the Default Domain Policy by hand; rescan → 2 resolved; record `lab-fixed.json`; all tests green including the truth table. | [agent on DC1 + Naif] |
-| 3 | Task 8 Step 8: README "What works today", status, build log; push. | [agent] |
-| 4 | Increments in order, each ending in a working rescan: 2 ECC control view · 3 account flags · 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. Before increments 3–6, read the plan's "Forward compatibility" notes. | [agent] |
+| 1 | Increment 2 — ECC control view: a per-control section in the report (2-2-3-1 … 2-2-3-5: technical evidence pass / fail / not assessed with reason, and the limitation sentence), from the existing findings and scan history. Plan it first, tests first. | [agent] |
+| 2 | Increments 3–6 in order, each ending in a working rescan: 3 account flags · 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. Before increments 3–6, read the MVP-1 plan's "Forward compatibility" notes. | [agent] |
+| 3 | Rehearse the MVP-1 demo from `seeded` and time each step. | [Naif] |
 
 ## Blockers / open questions
 
-- Task 8 needs Naif: the OK to run `Setup-Lab.ps1`, the `seeded` snapshot and the manual fix in Group
-  Policy Management.
+- None for the engine. Open: when the dashboard application (a separate repository, D7) starts relative
+  to the engine increments.
 
 ## Scope
 

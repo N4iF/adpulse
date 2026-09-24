@@ -67,3 +67,10 @@ This log, together with the git history, is the honest timeline of the project.
   issues, all fixed with tests; a test-name collision between the two `tests` packages had hidden the
   adrules CLI tests (files renamed, rule added to CONTRIBUTING). 60 passed, 2 skipped; ruff and mypy
   clean. Not yet run against the real DC: Task 8 (`Setup-Lab.ps1`) waits for Naif's OK.
+- **MVP-1 done in the lab (Task 8).** `Setup-Lab.ps1` (after a fix to its git-ignore check, which stopped it
+  before any change) created `adpulse.reader` (Domain Users only) and a Schannel-CSP LDAPS certificate,
+  loaded with `renewServerCertificate` — NTDS was not restarted. First collection as the reader over
+  validated LDAPS: 0.9 s, GUID and SID match `Get-ADDomain`, 7 / on / 0 → `lab-default.json`. Naif took
+  snapshot `seeded`. Live scan: 2 failed, new 2. Naif fixed the Default Domain Policy in Group Policy
+  Management (14 / on / 5, 15 minutes) and ran `gpupdate /force`; the GPO and the domain object agree.
+  Rescan: 0 failed, resolved 2 → `lab-fixed.json`. Truth table green; 62 tests pass; ruff and mypy clean.
