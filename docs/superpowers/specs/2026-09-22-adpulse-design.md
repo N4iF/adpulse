@@ -1,6 +1,6 @@
 # ADPulse نبض — design specification
 
-Date: 2026-09-22 · Status: approved · Amended 2026-09-23/24 (D21–D31) · Owner: Naif Al Anazi
+Date: 2026-09-22 · Status: approved · Amended 2026-09-23/24 (D21–D35) · Owner: Naif Al Anazi
 
 ## 1. Purpose
 
@@ -35,8 +35,9 @@ Cutting scope always cuts the slice, never the core's quality.
 
 The first thing built and demonstrated is MVP-1: three password-policy checks (PWD-01 minimum length,
 PWD-02 complexity, PWD-04 lockout) read from the domain object as a standard user, run end to end by
-`adrules scan`, producing a `ScanResult` and one static HTML report (EN/AR, printable), with new / open /
-resolved between scans. Everything in the table above beyond that arrives as numbered increments, each
+`adrules scan`, producing a `ScanResult` and static HTML reports in English and Arabic (printable), with
+new / open / resolved between scans. ADPulse only reads; the lab demo starts from the fresh domain and the
+fix is made by hand in the Default Domain Policy (D33). Everything in the table above beyond that arrives as numbered increments, each
 ending in a working rescan (order in `PROJECT-STATUS.md`). No component in sections 4.1–4.4 is built
 before the increment that needs it.
 
@@ -56,8 +57,8 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
 
 ### 4.1 adsnap — collector and snapshot schema
 
-- LDAPS with paged search; NTLM bind as an ordinary domain account (standard-user assessment) or an
-  elevated account (privileged assessment). Security descriptors read with `LDAP_SERVER_SD_FLAGS`
+- LDAPS with paged search; simple bind with the account's UPN over TLS (MVP-1; NTLM remains an option)
+  as an ordinary domain account (standard-user assessment) or an elevated account (privileged assessment). Security descriptors read with `LDAP_SERVER_SD_FLAGS`
   (OID 1.2.840.113556.1.4.801, flags 0x07) and parsed with `winacl` (pinned) into a canonical rights
   vocabulary. Extended-right and attribute GUIDs resolved from `CN=Extended-Rights` and the schema.
 - SYSVOL over SMB (`smbprotocol`, pure Python) for Group Policy Preference files and `GptTmpl.inf`.
@@ -72,16 +73,14 @@ Conceptual architecture: `Collector → Snapshot → {Rule Engine, Evidence Norm
 
 ### 4.2 adrules — checks, findings, prioritization, graph, controls
 
-- **Catalog:** one YAML per check (id, category, severity, privilege_required, title_en/ar,
-  why_it_matters_en/ar, remediation_en/ar, control_mappings.nca_ecc_2_2024[], attack_techniques[],
+- **Catalog:** one YAML per check (id, category, severity, privilege_required, requires_coverage, title,
+  why_it_matters and remediation each as `{en, ar}`, control_mappings.nca_ecc_2_2024[], attack_techniques[],
   matches_pingcastle_rule, evidence_source) and one `evaluate(snapshot, meta, ctx) -> list[Finding]`. Statuses:
   `fail | pass | not_assessed | needs_elevated`. The long-term catalog is `docs/research/ad-check-catalog.md`.
 - **Finding model:** a rule returns `list[Finding]`; the runner wraps it in a `CheckResult` (status, reason,
-  confidence, findings[]) (D31). Finding:
-  id, rule_id, title, category, severity, status, affected_object, affected_object_type, subject_id,
-  evidence, evidence_source, why_it_matters, remediation, privilege_required, exposure, blast_radius,
-  control_mappings, attack_techniques, related_paths, first_seen, last_seen, resolved_at, confidence,
-  assessment_limitations. Key = (rule_id, object_id, subject_id).
+  confidence, findings[]) (D31). Finding v1 fields are frozen in `docs/architecture.md`; lifecycle state
+  and first/last seen live in `ScanResult`. Later increments may add optional fields (exposure,
+  blast_radius, related_paths, priority). Key = (rule_id, object_id, subject_id).
 - **Prioritization v1:** documented factors (severity, exposure, affected assets, privilege required,
   blast radius, evidence confidence, path relevance) and a labelled heuristic priority score. No domain
   score is presented as an objective measurement.
@@ -111,12 +110,13 @@ the machine.
 
 ## 5. Lab
 
-VMware Workstation, domain `corp.local`: `DC01` (Windows Server 2022, AD DS, DNS, self-signed LDAPS
-certificate) and `SRV01` (member server). Development runs inside DC01 (Claude Code in PowerShell, git
-clone at `C:\ADPulse\`, amended 2026-09-23, D30). `Install-DC.ps1`, `Seed.ps1` (the 12 Tier A seeds, the
-designed path, the `adpulse.reader` account), snapshots `clean` and `seeded`; `Drift.ps1` changes state
-between scans; `Fix-<check>.ps1` remediations; `expected-findings.yaml` is the ground-truth dataset. AD CS
-and scale seeding are Tier B. See `lab/README.md`.
+VMware Workstation, domain `corp.local`: `DC1` (Windows Server 2022, AD DS, DNS, self-signed LDAPS
+certificate) and `SRV01` (a domain-joined Windows 10 client) (D32). Development runs inside DC1 (Claude
+Code in PowerShell, workspace `C:\ADPulse\` with this repo at `C:\ADPulse\adpulse`, D30, D32).
+`Setup-Lab.ps1` (the `adpulse.reader` account and LDAPS) for MVP-1; later `Seed.ps1` (the seeds of
+increments 3–6 and the designed path), `Drift.ps1` and `Fix-<check>.ps1`; snapshots `clean` and `seeded`;
+`expected-findings.yaml` is the ground-truth dataset. Password and lockout settings change only through
+the Default Domain Policy (D33). AD CS and scale seeding are Tier B. See `lab/README.md`.
 
 ## 6. Verification and validation
 
@@ -151,8 +151,9 @@ no `Co-Authored-By` trailers. Versions verified 2026-09-22: Node 24 LTS, React 1
 - **Tier A (first slice core):** connect (standard user) · snapshot · 12 checks · evidence · ECC evidence
   for 2-2-3-x · findings view · one derived path · EN/AR report · rescan · resolved/regressed.
   Checks: DEL-01, DEL-05, ACL-01, ACL-03, PRV-04, KRB-01, KRB-02, KRB-03, GPO-01, ACC-01, ACC-04, PWD-01
-  (amended 2026-09-23, D29: PKI-01 → Tier B; single-DC lab).
-- **Tier B:** PKI-01 (AD CS), PWD-02/04, PRV-01/02/06, ACC-09, STL-01/02, OS-01, Tier 0 closure, more
+  (amended 2026-09-23, D29: PKI-01 → Tier B; single-DC lab). Since D31 these twelve are delivered as
+  increments 1–6 after MVP-1 (PWD-01/02/04), in the order in `PROJECT-STATUS.md`.
+- **Tier B:** PKI-01 (AD CS), PRV-01/02/06, ACC-09, STL-01/02, OS-01, Tier 0 closure, more
   GPO checks, RTL polishing, trend visualizations, basic scheduler, lab scale and extra VMs.
 - **Tier C:** the full 104-check catalog and beyond, multiple collectors, advanced ADCS,
   multi-domain/forest, continuous scheduling, integrations, AI enrichment, historical analytics,

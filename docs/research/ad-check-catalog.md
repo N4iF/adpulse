@@ -5,7 +5,10 @@ Microsoft AD security guidance, ADSecurity.org, Certipy/Locksmith (ADCS), ANSSI 
 104 checks in 14 categories (90 standard-user, 10 elevated, 4 mixed). This is the long-term catalog;
 product slices pick subsets. Severity and privilege are suggestions to be confirmed in the lab.
 
-## Tier A — the 12 checks of the first product slice
+## Tier A — the 12 checks of increments 1–6 (the October ceiling)
+
+Since D31 (2026-09-24) the first slice is MVP-1 (PWD-01, PWD-02, PWD-04); these twelve follow as
+increments 1–6 in the order in `PROJECT-STATUS.md`.
 
 All standard-user, all assessable against a single domain controller. Detection uses the derived fields
 defined in `docs/architecture.md`; exclusions prevent false positives on a clean domain. (PKI-01 / ESC1

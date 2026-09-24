@@ -25,13 +25,14 @@ license. A DCO sign-off is a certification of origin; it is **not** a copyright 
 - Rules never read `raw`; they read `derived` fields and the parsed `security_descriptor` only
   (`docs/architecture.md` lists the derived fields).
 - Keep terminology: "technical evidence", "potential privilege-escalation path", "standard-user assessment".
-- Bilingual texts: every user-facing rule string has `_en` and `_ar` variants.
+- Bilingual texts: every user-facing rule string (`title`, `why_it_matters`, `remediation`) is an
+  `{en, ar}` object in the rule YAML.
 - Conventional commit messages. No `Co-Authored-By` trailers.
 
 ## Development setup
 
 See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest` (runs with
-`--import-mode=importlib`), `uv run ruff check`.
+`--import-mode=importlib`), `uv run ruff check`, `uv run mypy` (strict). All three must pass.
 
 ## Adding a check
 
@@ -39,8 +40,10 @@ See `docs/SETUP.md`. In short: Python 3.12, `uv sync`, `uv run pytest` (runs wit
 2. Add `packages/adrules/src/adrules/catalog/<id_snake>.yaml` (e.g. `del_01.yaml`: metadata, bilingual
    texts, mappings, `requires_coverage`) and `<id_snake>.py` with `evaluate(snapshot, meta, ctx) -> list[Finding]`
    (a status plus one `Finding` per failing object, or per object/trustee pair for ACL checks).
-3. Add `tests/catalog/test_<id_snake>.py` with a failing and a passing mini-snapshot built with
-   `adsnap.testing.make_snapshot`.
+3. Add tests under `packages/adrules/tests/` (one file per check, or one file for a closely related
+   group such as `test_password_rules.py`) with a failing and a passing mini-snapshot built with
+   `adsnap.testing.make_snapshot`. A rule that lacks the data it needs raises `NotAssessed(reason)`;
+   missing data never becomes a FAIL or a PASS.
 4. If the check needs new derived fields, add them to `adsnap` (dictionary in `docs/architecture.md`)
    with a schema version bump and tests.
 5. State the required collection privilege and the coverage key the check depends on; when that

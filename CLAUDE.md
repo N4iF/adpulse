@@ -14,21 +14,24 @@ Read this file fully before doing anything.
 
 ## Where this session runs (D30)
 
-Normally **inside the lab domain controller `DC01`** (Windows Server 2022 in VMware), in PowerShell, in a
-clone at `C:\ADPulse\adpulse`. The same repo also works on the host PC or the laptop; check with
+Normally **inside the lab domain controller `DC1`** (`dc1.corp.local`, Windows Server 2022 in VMware; older
+documents call it `DC01`), in PowerShell, in the workspace `C:\ADPulse\` with this repo at
+`C:\ADPulse\adpulse` (D32). The same repo also works on the host PC or the laptop; check with
 `hostname` and `(Get-CimInstance Win32_ComputerSystem).PartOfDomain`.
 
-When running on DC01:
+When running on DC1:
 - **Lab only.** This domain is the ADPulse lab (`lab/README.md`). Never point anything at another domain.
 - **Admin rights are for the lab scripts.** Change Active Directory only through the scripts in `lab/`
-  (`Seed.ps1`, `Fix-*.ps1`, `Drift.ps1`). Any other directory change: ask Naif first.
+  (`Setup-Lab.ps1`; later `Seed.ps1`, `Fix-*.ps1`, `Drift.ps1`). Any other directory change: ask Naif
+  first. Password and lockout settings are changed only in the Default Domain Policy GPO, never on the
+  domain object (D33). ADPulse itself only reads.
 - **The collector runs as `adpulse.reader`** (standard mode), never as the admin session, so the
   "standard-user assessment" claim stays true. Privileged mode is a separate, explicit run.
 - **Snapshots revert the clone.** Commit and push before asking Naif to revert a VMware snapshot; after a
   revert, `git pull` every repo first. You cannot revert your own VM.
 - **Shell is Windows PowerShell 5.1:** no `&&`/`||` (use `;` and `if ($?) { … }`); quote paths with spaces.
 - First session on a new DC: fill in "Lab inventory" in `lab/README.md` from `Get-ADDomain`,
-  `Get-ADDomainController` and `Get-ADComputer -Filter *`, then commit.
+  `Get-ADDomainController` and `Get-ADComputer -Filter *`, then commit (done for DC1 on 2026-09-24).
 
 ## Non-negotiable rules
 
@@ -87,9 +90,9 @@ Rules never read `raw`; they read `derived` fields and the parsed `security_desc
 | What was built when | `docs/BUILD-LOG.md` |
 | Setup on a new machine | `docs/SETUP.md` |
 | Design spec | `docs/superpowers/specs/2026-09-22-adpulse-design.md` |
-| **Plan to execute now (MVP-1)** | `docs/superpowers/plans/2026-09-24-mvp1.md` |
-| Reference plan for later increments | `docs/superpowers/plans/2026-09-23-phase1-engine.md` |
-| Check catalog (104 checks) and the Tier A twelve | `docs/research/ad-check-catalog.md` |
+| **Plan to execute now (MVP-1)** — read its "Corrections" first | `docs/superpowers/plans/2026-09-24-mvp1.md` |
+| Reference plan for later increments (not plug-in; see the MVP-1 plan's forward-compatibility notes) | `docs/superpowers/plans/2026-09-23-phase1-engine.md` |
+| Check catalog (104 checks) and the twelve of increments 1–6 (former Tier A) | `docs/research/ad-check-catalog.md` |
 | Lab contract, prerequisites, designed path | `lab/README.md` |
 | Collector/lab/tooling research | `docs/research/stack-and-lab.md` |
 | Comparable tools | `docs/research/comparable-tools.md` |

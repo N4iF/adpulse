@@ -17,13 +17,16 @@ security descriptors.**
 | `tier0/` | Tier 0 seed list and closure. |
 | `controls/` | Control-evidence engine: NCA ECC-2:2024 controls → technical evidence status + limitations. |
 
-## CLI (planned)
+## CLI
 
-```bash
-adrules evaluate snapshot.json --out findings.json
-adrules paths snapshot.json --from "CORP\\helpdesk" --to tier0
+```powershell
+uv run adrules scan                          # MVP-1: collect, evaluate, diff, write scan JSON + EN and AR reports
+uv run adrules scan --from-snapshot s.json   # same, from a saved snapshot
+uv run adrules evaluate s.json               # MVP-1: print check results as JSON
 ```
+
+Planned later: `adrules paths snapshot.json --from "CORP\\helpdesk" --to tier0` (increment 5).
 
 ## Status
 
-Skeleton only. Finding model and the first three checks (DEL-01, KRB-03, ACL-01) come first, tests first.
+Skeleton only; MVP-1 (PWD-01, PWD-02, PWD-04, D31) is being built, tests first.

@@ -35,9 +35,11 @@
 ```
 
 **MVP-1 builds only this path (D31):** collector (domain object over LDAPS, no security descriptors, no
-SYSVOL) → snapshot → rule engine (PWD-01/02/04) → Finding → lifecycle (new/open/resolved) → one static
-HTML report. Control mapping as a view, the path graph and the other collectors are later increments;
-the interfaces above stay the same so they plug in without rework.
+SYSVOL) → snapshot → rule engine (PWD-01/02/04) → Finding → lifecycle (new/open/resolved) → static
+HTML reports in English and Arabic. Control mapping as a view, the path graph and the other collectors
+are later increments. The Snapshot, Finding and CheckResult contracts stay the same; the test builders,
+the collector's directory source and the rule context grow with increments 3–5 (see the MVP-1 plan's
+forward-compatibility notes, D35). ADPulse only reads the directory.
 
 Collectors produce facts. The engine judges. Rules never read `raw`; they read only normalized data —
 `derived` fields and the parsed `security_descriptor` — so a new collector (a PingCastle XML or
@@ -56,7 +58,7 @@ Password policy lives on the domain object; SYSVOL results live on each GPO obje
   "snapshot": {
     "id": "2026-10-01T02:00:00Z-corp.local",
     "collected_at": "2026-10-01T02:00:00Z",
-    "collector": { "name": "adsnap", "version": "0.1.0", "auth": "ntlm", "mode": "standard" },
+    "collector": { "name": "adsnap", "version": "0.1.0", "auth": "simple", "mode": "standard" },
     "domain": { "object_id": "…", "dn": "DC=corp,DC=local", "netbios": "CORP", "sid": "S-1-5-21-…", "functional_level": "2016" }
   },
   "objects": [{
@@ -101,7 +103,9 @@ details in `errors[]`), `none`.
 Each rule declares `requires_coverage: [...]`. If any required key is `none`, the rule returns
 `not_assessed` with the reason; if `partial`, it assesses what it has and sets `confidence: medium`.
 A rule that needs privileged collection returns `needs_elevated` in standard mode. A `pass` is only ever
-returned when the data needed to fail was actually collected.
+returned when the data needed to fail was actually collected: a rule that finds a derived field missing
+(`None`) raises `NotAssessed(reason)` and the runner reports `not_assessed`; missing data never becomes a
+FAIL or a PASS.
 
 ### Derived-field dictionary (Tier A)
 
@@ -163,28 +167,32 @@ and, later, the app and API.
 
 ## ScanResult (adrules.scan)
 
-What `adrules scan` writes (`snapshots/<id>.scan.json`) and what the HTML report renders:
+What `adrules scan` writes (`snapshots/<id>.scan.json`, plus `<id>.en.html` and `<id>.ar.html`) and what
+the HTML reports render:
 
 ```
 schema_version
-snapshot: {id, collected_at, domain, mode}
+snapshot_id, collected_at, domain, mode
 coverage
 results: [CheckResult]
-lifecycle: [{key, state: new | open | resolved, not_reassessed}]
+lifecycle: [{key, state: new | open | resolved, not_reassessed, finding}]
 previous_scan_id
 ```
 
-A finding is `resolved` only when its rule was actually re-assessed (pass or fail) in the new scan; if the
-rule could not run, the finding stays `open` with `not_reassessed: true`, so a failed connection can never
-show a false "resolved".
+The previous scan is the latest saved scan of the same domain collected before this one. The diff starts
+from that scan's `new` and `open` lifecycle entries (including `not_reassessed` ones). A finding is
+`resolved` only when its rule was actually re-assessed (pass or fail) in the new scan; if the rule could
+not run, the finding stays `open` with `not_reassessed: true` for as many scans as that lasts, so a failed
+connection can never show a false "resolved".
 
 ## Rules (adrules.catalog)
 
 One YAML per check (`del_01.yaml`: id, category, severity, privilege_required, requires_coverage,
-title_en/ar, why_it_matters_en/ar, remediation_en/ar, control_mappings.nca_ecc_2_2024[],
-attack_techniques[], matches_pingcastle_rule, evidence_source) and one Python module (`del_01.py`) with
-`evaluate(snapshot, meta, ctx) -> list[Finding]`. Thresholds (e.g. PWD-01 minimum length, default 12) are
-parameters with documented defaults. Tests: positive and negative mini-snapshots per rule.
+`title`, `why_it_matters` and `remediation` each as `{en, ar}`, control_mappings.nca_ecc_2_2024[],
+attack_techniques[], matches_pingcastle_rule, evidence_source, params) and one Python module
+(`del_01.py`) with `evaluate(snapshot, meta, ctx) -> list[Finding]`. Thresholds (e.g. PWD-01 minimum
+length, default 12) are `params` with documented defaults. Tests: positive and negative mini-snapshots
+per rule.
 
 ## Prioritization (adrules.prioritize)
 

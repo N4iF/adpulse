@@ -22,7 +22,7 @@ Assistant memory is disposable; the repos are the truth. Follow this checklist e
    (`adpulse`, `adpulse-notes`, later the product-slice repo). Never leave uncommitted work.
    Never add a `Co-Authored-By` trailer.
 5. If the lab changed: ask Naif to take a VMware snapshot and name it in the build log. Everything must be
-   pushed first — a snapshot revert rolls back the clone on DC01.
+   pushed first — a snapshot revert rolls back the workspace on DC1.
 
 ## When you arrive (2 minutes)
 
@@ -30,7 +30,7 @@ Assistant memory is disposable; the repos are the truth. Follow this checklist e
 2. Read `PROJECT-STATUS.md`, then the last 3 entries of `docs/BUILD-LOG.md`. If `adpulse-notes` is
    present, read its `STATUS.md` too.
 3. `uv sync` if `pyproject.toml` or `uv.lock` changed.
-4. Start with "Next actions" item 1 that matches your tag ([agent] or [Naif, admin]).
+4. Start with "Next actions" item 1 that matches your tag ([agent] or [Naif]).
 
 ## Two people, one branch
 

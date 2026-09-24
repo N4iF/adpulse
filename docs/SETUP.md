@@ -1,6 +1,6 @@
 # SETUP — preparing a machine to develop ADPulse نبض
 
-Primary machine: **the lab domain controller `DC01`** (Windows Server 2022 in VMware, D30). The same steps
+Primary machine: **the lab domain controller `DC1`** (Windows Server 2022 in VMware, D30, D32). The same steps
 work on the host PC or the laptop. Commands are Windows PowerShell 5.1. Steps marked **[admin]** need an
 elevated PowerShell; Naif does them, an AI session cannot.
 
@@ -9,7 +9,7 @@ elevated PowerShell; Naif does them, an AI session cannot.
 | Tool | Install | Check |
 |---|---|---|
 | Git for Windows (also gives Claude Code its Bash tool) | installer from https://git-scm.com/download/win, then `Git-<ver>-64-bit.exe /VERYSILENT /NORESTART` **[admin]** | `git --version` |
-| Python **3.12** (not 3.13/3.14) | installer from https://www.python.org/downloads/, then `python-3.12.<x>-amd64.exe /quiet InstallAllUsers=1 PrependPath=1` **[admin]** | `py -3.12 --version` |
+| Python **3.12** (not 3.13/3.14; other versions may stay installed, `uv` picks 3.12 from `.python-version`) | installer from https://www.python.org/downloads/, then `python-3.12.<x>-amd64.exe /quiet InstallAllUsers=1 PrependPath=1` **[admin]** (a per-user install also works; DC1 has 3.12.0 per-user) | `py -3.12 --version` |
 | uv | `irm https://astral.sh/uv/install.ps1 \| iex` (no admin) | `uv --version` |
 | GitHub CLI | `.msi` from https://github.com/cli/cli/releases/latest, then `msiexec /i gh_<ver>_windows_amd64.msi /quiet` **[admin]** | `gh --version` |
 | Claude Code | `irm https://claude.ai/install.ps1 \| iex` (native installer, no Node.js, no admin) | new window, `claude --version` |
@@ -55,20 +55,26 @@ Set-Location C:\ADPulse\adpulse
 uv sync             # installs adsnap and adrules (editable) + dev tools from uv.lock
 uv run pytest       # exit code 5 = "no tests collected"; expected until the first test exists
 uv run ruff check
+uv run mypy
 ```
 
 ## 5. `.env` at `C:\ADPulse\adpulse\.env` (git-ignored, never committed)
 
+On DC1, `lab/Setup-Lab.ps1` writes this file (with a generated password for `adpulse.reader`). On another
+machine, write it by hand with the same keys:
+
 ```
-ADPULSE_DC=dc01.corp.local          # DNS name, not IP: LDAPS validates the hostname
+ADPULSE_DC=dc1.corp.local           # DNS name, not IP: LDAPS validates the hostname
 ADPULSE_DOMAIN=corp.local
 ADPULSE_USER=adpulse.reader@corp.local
 ADPULSE_PASSWORD=...
 ADPULSE_MODE=standard
-ADPULSE_CA_CERT=lab/dc01-ldaps.cer  # the lab DC's self-signed certificate, exported by Seed.ps1
+ADPULSE_CA_CERT=lab/dc-ldaps.pem    # the lab DC's self-signed certificate, exported by Setup-Lab.ps1
 ```
 
-Use the real names from "Lab inventory" in `lab/README.md` if they differ.
+Use the real names from "Lab inventory" in `lab/README.md` if they differ. A line starting with `#` is a
+comment, and so is ` # …` after a value; a `#` inside a value (`Pass#word`) is kept, and a value in quotes
+is taken as is. Variables already set in the environment take precedence over `.env`.
 
 ## 6. Start working
 
@@ -88,5 +94,7 @@ pushed (`lab/README.md` → Snapshot discipline).
 |---|---|
 | `claude` not found after install | open a new PowerShell window |
 | `uv sync` fails copying a file with "virus or potentially unwanted software" | a dependency tripped Defender; replace it (D28), do not add an exclusion |
-| LDAPS: certificate verify failed | use the DC's DNS name, set `ADPULSE_CA_CERT`, or pass `--insecure-lab` (lab only) |
+| LDAPS: certificate verify failed | use the DC's DNS name (`dc1.corp.local`), set `ADPULSE_CA_CERT`, or pass `--insecure-lab` (lab only) |
+| LDAPS: connection closed by the remote host | the DC has no LDAPS certificate yet: run `lab/Setup-Lab.ps1`; check Directory Service event 1220 |
+| Password or lockout values change back after `gpupdate` or a few hours | they were set on the domain object; set them in the Default Domain Policy GPO instead (D33) |
 | `&&` is not a valid statement separator | Windows PowerShell 5.1: use `;` or `if ($?) { … }` |

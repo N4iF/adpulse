@@ -97,3 +97,31 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   Rule contract everywhere: `evaluate(snapshot, meta, ctx) -> list[Finding]`; the runner wraps findings
   in a `CheckResult`. Why: a judge must see a working result early; heavy features up front delay that.
   Plan: `docs/superpowers/plans/2026-09-24-mvp1.md`.
+- **D32 The lab as built (Naif, 2026-09-24).** The DC is `DC1` (`dc1.corp.local`, 192.168.50.10), not
+  `DC01`; the second machine `SRV01` (192.168.50.210) is a domain-joined Windows 10 client, not a server.
+  The workspace on DC1 is `C:\ADPulse\` holding the repos `adpulse\` and `adpulse-notes\` (as in
+  `docs/SETUP.md`); D30's "clone at `C:\ADPulse\`" means that workspace. DC1 takes its time from internet
+  NTP, because the VM clock had already jumped once and scan order depends on `collected_at`. Why: record
+  reality instead of the plan's names. Consequences: `.env` and docs use `dc1.corp.local`; inventory in
+  `lab/README.md`.
+- **D33 ADPulse only reads; no lab script sets the password policy (Naif, 2026-09-24).** The MVP-1 demo
+  starts from the fresh domain (fails PWD-01 and PWD-04, passes PWD-02) and the fix is made by hand in the
+  Default Domain Policy with Group Policy Management, followed by `gpupdate /force` and a rescan that
+  shows both resolved. `Set-WeakPasswordPolicy.ps1` and `Fix-PasswordPolicy.ps1` are dropped; the only
+  MVP-1 lab script is `Setup-Lab.ps1` (the `adpulse.reader` account and the LDAPS certificate). Why:
+  verified on DC1 that the Default Domain Policy re-applies its account-policy values (every 16 hours, on
+  `gpupdate /force`, after GPO changes), so values written to the domain object by a script can silently
+  revert and show a false "resolved"; scripting the GPO instead is extra work the demo does not need,
+  and the manual GPO fix is the real-world remediation. Consequences: the demo shows 2 findings and
+  1 pass, then 2 resolved; any later seed or fix of password or lockout settings goes through the GPO.
+- **D34 AI "explain" button later (Naif, 2026-09-24).** A later, optional per-finding action that explains
+  the finding and proposes fix steps and references, as a starting point for the administrator. It is
+  D19 enrichment: it never creates findings or changes severity, status or evidence, and it is not part
+  of MVP-1. Each rule's static bilingual remediation stays the baseline.
+- **D35 MVP-1 plan corrected before execution (2026-09-24).** The MVP-1 plan was dry-run in a scratch copy
+  and reviewed against DC1; its design holds (27 tests pass) but several steps could not work as
+  written (DER certificate file, `dc01` host name, interactive password prompt, `adsnap collect`
+  command, lint and type gates) and some behaviour contradicted the project's own rules (missing data
+  becoming a FAIL, the "not re-assessed" guard lasting one scan, the printed report hiding evidence and
+  the ECC limitation sentence). The corrections are listed at the top of the plan and are part of the
+  MVP-1 work; forward-compatibility gaps with the reference plan are recorded there for increments 3–6.

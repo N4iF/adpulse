@@ -19,15 +19,18 @@ Active Directory snapshot collector and versioned snapshot schema. Part of the A
   GPOs, certificate templates, CAs, trusts, FGPPs; identity = objectGUID; `raw` vs `derived` fields plus
   the parsed `security_descriptor`), `coverage` and `errors`. The derived-field dictionary is in
   `docs/architecture.md`.
-- Connect with the DC's DNS name (e.g. `dc01.corp.local`), not its IP: LDAPS validates the hostname.
+- Connect with the DC's DNS name (e.g. `dc1.corp.local`), not its IP: LDAPS validates the hostname.
 
-## CLI (planned)
+MVP-1 (D31) reads only the domain object (password and lockout policy) with a simple bind over LDAPS; the
+rest of the list above arrives with later increments.
 
-```bash
-adsnap collect --dc 10.10.10.10 --domain corp.local --user standard@corp.local --out snapshot.json
-adsnap collect --from-fixture tests/fixtures/lab-seeded.json --out snapshot.json
+## CLI (MVP-1)
+
+```powershell
+uv run adsnap collect --out snapshot.json   # connection settings come from .env (docs/SETUP.md §5)
+uv run adsnap collect --out snapshot.json --insecure-lab   # lab only: skip certificate validation
 ```
 
 ## Status
 
-Skeleton only. Schema and tests come first.
+Skeleton only; MVP-1 is being built (`docs/superpowers/plans/2026-09-24-mvp1.md`).

@@ -43,3 +43,17 @@ This log, together with the git history, is the honest timeline of the project.
 - New plan `docs/superpowers/plans/2026-09-24-mvp1.md` (9 tasks); the full-scope plan is now reference
   only. Architecture, spec, status, lab README and contribution docs aligned; lab scripts for MVP-1 do not
   force a group-policy refresh (it could re-apply the Default Domain Policy's values).
+- First session inside the lab DC (`DC1`, built today by Naif; snapshot `clean` taken). Workspace
+  `C:\ADPulse\` with `adpulse\` and `adpulse-notes\`; `uv sync` on Python 3.12.0, pytest (no tests yet),
+  ruff and mypy green. DC time moved to internet NTP. Lab inventory recorded (D32).
+- Verified the MVP-1 plan before coding: a dry run of all its code in a scratch copy (27 tests pass, but
+  ruff and mypy fail as written) and reviews of the collector, the lab scripts and the docs against DC1,
+  each finding checked by a second reviewer. Found: DER certificate file unusable by Python, `dc01` does
+  not resolve, `Read-Host` cannot run non-interactively, `adsnap collect` exits 2, missing attributes
+  become FAILs, the not-re-assessed guard lasts one scan, the printed report hides evidence and the ECC
+  limitation sentence, and the Default Domain Policy re-applies password settings written to the domain
+  object (every 16 h, on `gpupdate /force`, after GPO changes). Corrections added to the plan (D35).
+- Naif's decisions: no lab script changes the password policy — the demo starts from the fresh domain and
+  the fix is made by hand in the Default Domain Policy (D33); an AI "explain" button is a later feature
+  (D34). Docs aligned (spec, catalog, architecture, SETUP, CONTRIBUTING, package READMEs, lab README).
+  No engine code yet; next is MVP-1 Task 1.

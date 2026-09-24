@@ -57,12 +57,15 @@ category: delegation
 severity: critical
 privilege_required: standard
 requires_coverage: [directory_objects]
-title_en: "Unconstrained Kerberos delegation on a non-domain-controller account"
-title_ar: "تفويض Kerberos غير المقيّد على حساب لا يعود إلى وحدة تحكم بالمجال"
-why_it_matters_en: "This server can impersonate any employee, including executives and IT administrators."
-why_it_matters_ar: "يستطيع هذا الخادم انتحال هوية أي موظف، بما في ذلك الإدارة التنفيذية ومسؤولي تقنية المعلومات."
-remediation_en: "Remove unconstrained delegation; use resource-based constrained delegation; add privileged accounts to Protected Users."
-remediation_ar: "أزل التفويض غير المقيّد؛ استخدم التفويض المقيّد القائم على المورد؛ أضف الحسابات ذات الصلاحيات إلى مجموعة Protected Users."
+title:
+  en: "Unconstrained Kerberos delegation on a non-domain-controller account"
+  ar: "تفويض Kerberos غير المقيّد على حساب لا يعود إلى وحدة تحكم بالمجال"
+why_it_matters:
+  en: "This server can impersonate any employee, including executives and IT administrators."
+  ar: "يستطيع هذا الخادم انتحال هوية أي موظف، بما في ذلك الإدارة التنفيذية ومسؤولي تقنية المعلومات."
+remediation:
+  en: "Remove unconstrained delegation; use resource-based constrained delegation; add privileged accounts to Protected Users."
+  ar: "أزل التفويض غير المقيّد؛ استخدم التفويض المقيّد القائم على المورد؛ أضف الحسابات ذات الصلاحيات إلى مجموعة Protected Users."
 control_mappings:
   nca_ecc_2_2024: ["2-2-3-4"]
 attack_techniques: ["T1187", "T1550.003"]
