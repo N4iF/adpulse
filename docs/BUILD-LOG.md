@@ -95,3 +95,16 @@ This log, together with the git history, is the honest timeline of the project.
   in full (`::details-content` in the print stylesheet; checked with Edge print-to-PDF). Report tests
   rewritten for the new structure; 76 tests pass. Workspace rules gained "users first", "don't follow the
   plan blindly" and "the repo is the memory".
+- **Increment 3 (code).** Plan written first. `adsnap`: `DirectorySource` with paged `search()` (scope limited
+  to base/subtree; ldap3 responses → rows with referrals skipped), the collector reads the domain object and
+  every user account (a failed user query → partial coverage, never an abort), `derive_user` (enabled,
+  built-in, password not required, no pre-authentication; unknown → None), `make_user`. `adrules`: ACC-01
+  (PingCastle `S-PwdNotRequired`) and KRB-02 (`S-NoPreAuth`), both verified in the official PingCastle rule
+  list; a shared `user_accounts()` makes a snapshot without users "not assessed"; cards name the account.
+  `lab/Seed.ps1`: OU `Lab`, 10 staff in five department groups, helpdesk, temporary staff, four service
+  accounts, `APP01`, and the increment 3–4 seeds. Finding while designing it: the planned increment-5 path
+  (helpdesk → GenericWrite → svc_sql → Domain Admins) would be erased by AdminSDHolder/SDProp within an
+  hour, so permission seeds wait for increment 5. `expected-findings.yaml` now has one schema for all
+  increments. Two-reviewer check (engine, `Seed.ps1`): the engine reviewer ran a live collection as the
+  reader and confirmed ldap3's behaviour from its source; `Seed.ps1` clean (cmdlets verified against this
+  PS 5.1/WS2022 install, idempotent, no SPN collisions); two low findings fixed. 92 tests pass.

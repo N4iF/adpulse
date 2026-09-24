@@ -38,17 +38,26 @@ increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
 - 2026-09-25: **IT-first report (D37, Naif).** The report now leads with "What to fix" (plain cards: what
   we found, why it matters, how to fix, most severe first), then "Fixed since the last scan", all checks
   and the history; the NCA ECC view is a collapsed section opened with one click and printed in full.
+- 2026-09-25: **Increment 3 code done** (plan `docs/superpowers/plans/2026-09-25-increment3-accounts.md`):
+  the collector reads every user account through a paged directory source (only `sAMAccountName` and
+  `userAccountControl` stored); ACC-01 (password not required) and KRB-02 (no Kerberos pre-authentication)
+  report each account by name; `lab/Seed.ps1` builds the lab organization with the increment 3–4 seeds; one
+  ground-truth schema for all increments. 92 tests pass (the 3 lab fixtures are re-recorded in the lab
+  steps below); live read-only collection from DC1 works (4 accounts, 0.8 s). Not yet: `Seed.ps1` run,
+  fixtures re-recorded.
 
 ## Next actions (in order)
 
 Tags: **[agent]** = an AI session; **[Naif]** = Naif (VMware, Group Policy Management, approvals).
-The lab is now in the fixed state; to rehearse the demo, revert to snapshot `seeded`, then `git pull`.
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Increment 3 — account flags (ACC-01 password not required, KRB-02 no Kerberos pre-authentication). It first needs the collector to read user objects (the reference plan's generic directory source with paged search), the reference test builders, and the lab users seeded by a first `lab/Seed.ps1` (changes AD: Naif's OK). Plan it first; read the MVP-1 plan's "Forward compatibility" notes. | [agent] |
-| 2 | Increments 4–6 in order, each ending in a working rescan: 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. | [agent] |
-| 3 | Rehearse the MVP-1 demo from `seeded` and time each step. | [Naif] |
+| 1 | Increment 3 lab steps (plan → "Lab steps"): revert DC1 to snapshot `seeded`; `git pull` in both repos. | [Naif] |
+| 2 | Record `lab-default.json`; run `.\lab\Seed.ps1` (Naif's OK given 2026-09-25); record `lab-seeded.json`. | [agent on DC1] |
+| 3 | Retake snapshot `seeded` (now with the organization and seeds). | [Naif] |
+| 4 | Scan → 4 problems; fix the policy (Default Domain Policy) and the two accounts; rescan → 4 fixed; record `lab-fixed.json`; truth table green; docs; push. | [agent on DC1 + Naif] |
+| 5 | Increments 4–6 in order: 4 more plain-attribute checks (the seeds are already in the lab) · 5 permissions and one path (redesign the path: AdminSDHolder, see `lab/README.md`) · 6 SYSVOL, krbtgt age, regressed. | [agent] |
+| 6 | Rehearse the demo from `seeded` and time each step. | [Naif] |
 
 ## Blockers / open questions
 
