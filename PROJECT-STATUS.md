@@ -5,9 +5,10 @@ non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — MVP-1 done (2026-09-24); next: increment 2.** Three password-policy checks work end to end
-inside the lab DC: collect → rules → findings → HTML reports → fix → rescan shows resolved. Everything
-else arrives as numbered increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
+**Phase 1 — MVP-1 and increment 2 done (2026-09-24); next: increment 3.** Three password-policy checks
+work end to end inside the lab DC (collect → rules → findings → HTML reports → fix → rescan shows
+resolved), and the report shows the NCA ECC-2:2024 2-2-3 control view. Everything else arrives as numbered
+increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
 
 ## Done
 
@@ -29,6 +30,11 @@ else arrives as numbered increments. Development runs inside the lab DC `DC1` in
   new 2 (1.4 s); Naif fixed the Default Domain Policy by hand (14 / on / 5, 15 min); rescan: 0 failed,
   resolved 2. Fixtures `lab-default.json` and `lab-fixed.json` recorded; truth table green; 62 tests
   pass, ruff and mypy clean.
+- 2026-09-24: **Increment 2 — ECC control view (D36).** The report shows the five controls of 2-2-3 with
+  the official EN/AR text (Arabic transcribed twice independently from the rendered official PDF,
+  identical; English re-verified) and a technical-evidence status; `adrules scan` prints a summary line.
+  Live on DC1 (fixed state): 2-2-3-1 pass, four not assessed; from `lab-default.json`: 2-2-3-1 fail.
+  Plan: `docs/superpowers/plans/2026-09-24-increment2-ecc-view.md`.
 
 ## Next actions (in order)
 
@@ -37,8 +43,8 @@ The lab is now in the fixed state; to rehearse the demo, revert to snapshot `see
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Increment 2 — ECC control view: a per-control section in the report (2-2-3-1 … 2-2-3-5: technical evidence pass / fail / not assessed with reason, and the limitation sentence), from the existing findings and scan history. Plan it first, tests first. | [agent] |
-| 2 | Increments 3–6 in order, each ending in a working rescan: 3 account flags · 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. Before increments 3–6, read the MVP-1 plan's "Forward compatibility" notes. | [agent] |
+| 1 | Increment 3 — account flags (ACC-01 password not required, KRB-02 no Kerberos pre-authentication). It first needs the collector to read user objects (the reference plan's generic directory source with paged search), the reference test builders, and the lab users seeded by a first `lab/Seed.ps1` (changes AD: Naif's OK). Plan it first; read the MVP-1 plan's "Forward compatibility" notes. | [agent] |
+| 2 | Increments 4–6 in order, each ending in a working rescan: 4 more plain-attribute checks · 5 permissions and one path · 6 SYSVOL, krbtgt age, regressed. | [agent] |
 | 3 | Rehearse the MVP-1 demo from `seeded` and time each step. | [Naif] |
 
 ## Blockers / open questions
@@ -53,13 +59,14 @@ from the domain object as a standard user; `adrules scan` → `ScanResult` JSON 
 English and Arabic (printable); lifecycle new / open / resolved. Demo: the fresh domain fails PWD-01 and
 PWD-04 and passes PWD-02; after the manual fix both are resolved (D33).
 
-**Increments (in order, each small and demo-worthy):** 2 ECC control view · 3 account flags (ACC-01,
+**Increments (in order, each small and demo-worthy):** 2 ECC control view (done) · 3 account flags (ACC-01,
 KRB-02) · 4 plain-attribute checks (KRB-03, ACC-04, DEL-05, DEL-01) · 5 permissions and one potential
 privilege-escalation path (ACL-01, ACL-03, PRV-04) · 6 SYSVOL (GPO-01), krbtgt age (KRB-01), regressed.
 Increments 1–6 together are the October ceiling (the former "Tier A").
 
-**Later (after the Cyberthon):** the rest of the 104-check catalog, AD CS, more collectors, scheduling,
-integrations, AI enrichment including the per-finding "explain" button (D34).
+**Later:** a more polished look for the report and the dashboard application (Naif, 2026-09-24). After the
+Cyberthon: the rest of the 104-check catalog, AD CS, more collectors, scheduling, integrations, AI
+enrichment including the per-finding "explain" button (D34).
 
 ## Risks
 

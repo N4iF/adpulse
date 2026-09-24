@@ -20,16 +20,23 @@ organizational policy/process compliance is not assessed."*
 
 ## Subdomain 2-2 Identity and Access Management — verbatim English (MVP mapping targets)
 
-| Control | Verbatim text (EN) | Arabic (normalized transcription; verify against rendered PDF) | Evidence from ADPulse checks |
+| Control | Verbatim text (EN) | Arabic (as printed; verified 2026-09-24, see below) | Evidence from ADPulse checks |
 |---|---|---|---|
-| 2-2-3-1 | "Single-factor authentication based on username and password." | التحقق من الهوية أحادي العنصر بناءً على إدارة تسجيل المستخدم، وإدارة كلمة المرور | PWD-01…06, ACC-01, ACC-02, ACC-03, ACC-04, GPO-01 (technical evidence about the username/password authentication configuration) |
-| 2-2-3-2 | "Multi-factor authentication, and defining the suitable authentication factors and their numbers as well as the suitable authentication techniques based on the result of impact assessment of authentication failure and bypass for remote access and for privileged accounts." | (transcribe) | Mostly `not_assessed` — AD alone cannot prove MFA. Partial evidence: smart-card-required flag on privileged accounts (ACC-10), Protected Users membership (PRV-02) |
-| 2-2-3-3 | "User authorization based on identity and access control principles (Need-to-Know and Need-to-Use principle, Least Privilege principle, and Segregation of Duties principle)." | (transcribe) | ACL-01, ACL-03, ACL-04, ACL-05, ACL-06, ACL-07, DEL-05, PKI-01…04, GPO-02, LAP-02 |
-| 2-2-3-4 | "Privileged access management." | إدارة الصلاحيات الهامة والحساسة | PRV-01…11, KRB-01, KRB-02, KRB-03, DEL-01…04, ACC-05, ACC-08 |
-| 2-2-3-5 | "Periodic review of identities and access rights." | المراجعة الدورية لهويات الدخول والصلاحيات | The headline mapping: continuous periodic assessment is the mechanism; lifecycle history (new / resolved / regressed across scans) is the evidence; STL-01…06, PRV-05, PRV-08 |
+| 2-2-3-1 | "Single-factor authentication based on username and password." | التحقق من الهوية أحادي العنصر (Single-factor authentication) بناءً على إدارة تسجيل المستخدم، وإدارة كلمة المرور. | PWD-01…06, ACC-01, ACC-02, ACC-03, ACC-04, GPO-01 (technical evidence about the username/password authentication configuration) |
+| 2-2-3-2 | "Multi-factor authentication, and defining the suitable authentication factors and their numbers as well as the suitable authentication techniques based on the result of impact assessment of authentication failure and bypass for remote access and for privileged accounts." | التحقق من الهوية متعدد العناصر (Multi-Factor Authentication) وتحديد عناصر التحقق المناسبة وعددها وكذلك تقنيات التحقق المناسبة بناء على نتائج تقييم الأثر المحتمل لفشل عملية التحقق وتخطيها، وذلك لعمليات الدخول عن بعد والحسابات ذات الصلاحيات الهامة والحساسة. | Mostly `not_assessed` — AD alone cannot prove MFA. Partial evidence: smart-card-required flag on privileged accounts (ACC-10), Protected Users membership (PRV-02) |
+| 2-2-3-3 | "User authorization based on identity and access control principles (Need-to-Know and Need-to-Use principle, Least Privilege principle, and Segregation of Duties principle)." | إدارة تصاريح وصلاحيات المستخدمين (Authorization) بناءً على مبادئ التحكم بالدخول والصلاحيات (مبدأ الحاجة إلى المعرفة والاستخدام "Need-to-know and Need-to-use"، ومبدأ الحد الأدنى من الصلاحيات والامتيازات "Least Privilege"، ومبدأ فصل المهام "Segregation of Duties"). | ACL-01, ACL-03, ACL-04, ACL-05, ACL-06, ACL-07, DEL-05, PKI-01…04, GPO-02, LAP-02 |
+| 2-2-3-4 | "Privileged access management." | إدارة الصلاحيات الهامة والحساسة (Privileged Access Management). | PRV-01…11, KRB-01, KRB-02, KRB-03, DEL-01…04, ACC-05, ACC-08 |
+| 2-2-3-5 | "Periodic review of identities and access rights." | المراجعة الدورية لهويات الدخول والصلاحيات. | The headline mapping: continuous periodic assessment is the mechanism; lifecycle history (new / resolved / regressed across scans) is the evidence; STL-01…06, PRV-05, PRV-08 |
 
 Note the AR/EN divergence at 2-2-3-1: the Arabic edition reads "…based on user-registration management
 and password management". Show both as printed.
+
+**Arabic verification (2026-09-24).** Subdomain 2-2 ("إدارة هويات الدخول والصلاحيات"), the 2-2-3 lead-in and
+2-2-3-1 … 2-2-3-5 were transcribed from the rendered official Arabic PDF (PDF page 19, printed page ١٦) by two
+independent readers; the transcriptions were identical character for character. The English texts above were
+re-checked against the English PDF (PDF pages 22–23, printed 19–20) the same day: no difference. The Arabic
+prints "بناءً" with tanween in 2-2-3-1 and 2-2-3-3 but "بناء" without it in 2-2-3-2, and straight quotes around the
+English terms in 2-2-3-3. The texts ADPulse displays live in `packages/adrules/src/adrules/ecc_2_2024.yaml`.
 
 ## Controls that are `not_assessed` in the MVP (with the reason shown)
 

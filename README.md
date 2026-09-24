@@ -8,7 +8,7 @@ ADPulse turns Active Directory state into security-control evidence and remediat
 
 Status: **pre-alpha — MVP-1 works end to end in the lab** (September 2026).
 
-## What works today (MVP-1, 2026-09-24)
+## What works today (MVP-1 and increment 2, 2026-09-24)
 
 On the lab domain controller, as an ordinary domain user over LDAPS:
 
@@ -19,8 +19,10 @@ uv run adrules scan   # collect → 3 checks → compare with the previous scan 
 - **Checks:** PWD-01 minimum password length, PWD-02 password complexity, PWD-04 account lockout (the
   domain password policy).
 - **Output:** `snapshots/<id>.scan.json` and a printable HTML report per language: check status, evidence,
-  remediation, NCA ECC-2:2024 technical evidence (2-2-3-1) with its assessment-limitation sentence, and
-  the scan history.
+  remediation, the scan history, and the assessment-limitation sentence.
+- **NCA ECC-2:2024 control view:** the five controls of 2-2-3 (Identity and Access Management) with their
+  official English and Arabic text and a technical-evidence status — fail, pass, or not assessed with the
+  reason and the checks planned for it. Technical evidence only, never compliance.
 - **Lifecycle:** findings are new / open / resolved between scans; a check that could not run never shows
   "resolved".
 - **Verified in the lab:** fresh domain → 2 findings; fix in the Default Domain Policy → the rescan shows
@@ -28,8 +30,8 @@ uv run adrules scan   # collect → 3 checks → compare with the previous scan 
 
 ## What it is designed to do
 
-Only the MVP-1 part above exists today; the bullets below describe the design, which arrives in
-increments (`PROJECT-STATUS.md`).
+Only the part above exists today; the bullets below describe the design, which arrives in increments
+(`PROJECT-STATUS.md`).
 
 ```
 AD facts  →  security checks  →  evidence  →  control mapping  →  assessment status

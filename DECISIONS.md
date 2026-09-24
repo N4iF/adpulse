@@ -125,3 +125,13 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   becoming a FAIL, the "not re-assessed" guard lasting one scan, the printed report hiding evidence and
   the ECC limitation sentence). The corrections are listed at the top of the plan and are part of the
   MVP-1 work; forward-compatibility gaps with the reference plan are recorded there for increments 3–6.
+- **D36 ECC control view (increment 2, 2026-09-24).** The report shows all five controls of NCA ECC-2:2024
+  2-2-3 with the official text (EN/AR) and a technical-evidence status derived from the checks mapped to
+  each: fail if a mapped check failed, pass if at least one ran and none failed, otherwise not assessed
+  with the reason (no check yet — listing the checks planned for increments 3–6 — the checks could not
+  run, or a control-specific reason). 2-2-3-2 (MFA) is not assessed because Active Directory alone cannot
+  show it; 2-2-3-5 (periodic review of identities and access rights) is not assessed until identity and
+  access checks exist, and the scan history is shown as the dated record that supports it. Why: a pass
+  must never say more than the evidence does; password-policy scans do not review identities. The view is
+  computed from the scan results and `control_mappings`; no schema change. Plan:
+  `docs/superpowers/plans/2026-09-24-increment2-ecc-view.md`.

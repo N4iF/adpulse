@@ -228,6 +228,14 @@ control: `technical_evidence_pass | technical_evidence_fail | not_assessed (+rea
 and the constant limitation sentence: "This result evaluates technical AD configuration only;
 organizational policy/process compliance is not assessed." ADPulse never claims compliance.
 
+**Implemented (increment 2, D36):** subdomain 2-2, controls 2-2-3-1 … 2-2-3-5, always all five. Texts live in
+`adrules/ecc_2_2024.yaml`; `adrules.controls.ecc_view(results, rules)` derives the status from the checks
+whose `control_mappings.nca_ecc_2_2024` name the control — fail if one failed, pass if at least one ran and
+none failed, otherwise not assessed with the reason (no check yet, with the planned checks; the checks could
+not run; or a control-specific reason, e.g. 2-2-3-2 MFA). 2-2-3-5 stays not assessed until identity and
+access review checks exist; the scan history is shown as the dated record that supports it. Nothing is
+stored: the view is recomputed from a `ScanResult`.
+
 ## Lifecycle
 
 Scans are diffed. A finding keyed (rule_id, object_id, subject_id) is `new` when first seen, `open`

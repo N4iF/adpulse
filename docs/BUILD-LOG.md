@@ -74,3 +74,13 @@ This log, together with the git history, is the honest timeline of the project.
   snapshot `seeded`. Live scan: 2 failed, new 2. Naif fixed the Default Domain Policy in Group Policy
   Management (14 / on / 5, 15 minutes) and ran `gpupdate /force`; the GPO and the domain object agree.
   Rescan: 0 failed, resolved 2 → `lab-fixed.json`. Truth table green; 62 tests pass; ruff and mypy clean.
+- **Increment 2 — NCA ECC-2:2024 control view (D36).** `adrules.controls` + `ecc_2_2024.yaml`: the five
+  controls of 2-2-3 with a technical-evidence status (fail / pass / not assessed with reason and planned
+  checks), a report section in both languages and a summary line in `adrules scan`. The Arabic texts of
+  subdomain 2-2 and 2-2-3-1…5 were transcribed from the rendered official PDF (page 19, printed ١٦) by two
+  independent readers — identical — and the English re-verified against the English PDF: no difference;
+  `nca-ecc-mapping.md` now records the verified Arabic. Design choice: 2-2-3-5 stays not assessed (the
+  password-policy scans do not review identities); the history caption now says it *supports* 2-2-3-5.
+  A one-reviewer check found no overclaiming and four latent edge cases in `ecc_view` (duplicate mapping,
+  missing result, a control-specific reason being masked, unknown control ids) — all fixed with tests.
+  Live on DC1 (fixed state): `0 fail, 1 pass, 4 not assessed`; from `lab-default.json`: `1 fail`.
