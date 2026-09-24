@@ -9,6 +9,7 @@ from jinja2 import Environment, StrictUndefined
 from markupsafe import Markup, escape
 
 from adrules.catalog import load_catalog
+from adrules.controls import ecc_view, load_subdomain
 from adrules.finding import Localized, Status
 from adrules.scan import ScanResult
 
@@ -28,7 +29,9 @@ LABELS: dict[str, dict[str, str]] = {
         "evidence_source": "Evidence source", "not_reassessed": "not re-assessed in this scan", "date": "Date",
         "setting": "Setting", "current": "Current", "expected": "Expected", "last_seen": "Last seen",
         "object": "Object",
-        "history_note": "Evidence of periodic review of identities and access rights (NCA ECC-2:2024 2-2-3-5, technical evidence).",
+        "history_note": "Dated record of periodic assessment; supports NCA ECC-2:2024 2-2-3-5 (periodic review of identities and access rights).",
+        "ecc_title": "NCA ECC-2:2024 technical evidence", "subdomain": "Subdomain", "control": "Control",
+        "ev_status": "Technical evidence", "note": "Note", "planned": "Planned checks",
     },
     "ar": {
         "title": "تقييم ضوابط أمن Active Directory", "checks": "الفحوصات المنفذة", "failed": "فاشلة",
@@ -40,7 +43,9 @@ LABELS: dict[str, dict[str, str]] = {
         "evidence": "الدليل", "evidence_source": "مصدر الدليل", "not_reassessed": "لم يُعَد تقييمها في عملية الفحص هذه",
         "date": "التاريخ", "setting": "الإعداد", "current": "القيمة الحالية", "expected": "المطلوب",
         "last_seen": "آخر قيمة", "object": "العنصر",
-        "history_note": "دليل تقني على المراجعة الدورية لهويات الدخول والصلاحيات (الضابط 2-2-3-5 من ECC-2:2024).",
+        "history_note": "سجل مؤرَّخ للتقييم الدوري، يدعم الضابط 2-2-3-5 من ECC-2:2024 (المراجعة الدورية لهويات الدخول والصلاحيات).",
+        "ecc_title": "دليل تقني للضوابط الأساسية للأمن السيبراني ECC-2:2024", "subdomain": "المكوّن الفرعي",
+        "control": "الضابط", "ev_status": "الدليل التقني", "note": "ملاحظة", "planned": "فحوصات مخطط لها",
     },
 }
 
@@ -51,6 +56,10 @@ MODE = {
 SEVERITY = {
     "en": {"critical": "Critical", "high": "High", "medium": "Medium", "low": "Low"},
     "ar": {"critical": "حرجة", "high": "عالية", "medium": "متوسطة", "low": "منخفضة"},
+}
+EVIDENCE = {
+    "en": {"technical_evidence_pass": "Pass", "technical_evidence_fail": "Fail", "not_assessed": "Not assessed"},
+    "ar": {"technical_evidence_pass": "ناجح", "technical_evidence_fail": "فاشل", "not_assessed": "لم يُقيَّم"},
 }
 STATUS = {
     "en": {"pass": "Passed", "fail": "Failed", "not_assessed": "Not assessed", "needs_elevated": "Needs elevated privileges"},
@@ -77,7 +86,7 @@ def reason_text(reason: str | None, lang: str) -> str:
 
 
 # A run of Latin text (a GPMC path, a setting name, a number) inside Arabic text.
-_LTR_RUN = re.compile(r"[A-Za-z0-9][A-Za-z0-9 >.,:/'_\-]*[A-Za-z0-9]|[A-Za-z0-9]")
+_LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 >.,:/'_\-]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
 
 
 def isolate_ltr(text: str) -> Markup:
@@ -103,6 +112,7 @@ def render_report(scan: ScanResult, history: list[ScanResult], lang: str = "en")
     return template.render(
         scan=scan, history=history[-10:], lang=lang, direction="rtl" if lang == "ar" else "ltr",
         t=LABELS[lang], limitation=LIMITATION[lang], mode_label=MODE[lang].get(scan.mode, scan.mode),
-        severity=SEVERITY[lang], status=STATUS[lang], titles=titles,
+        severity=SEVERITY[lang], status=STATUS[lang], evidence=EVIDENCE[lang], titles=titles,
+        controls=ecc_view(scan.results), subdomain=load_subdomain(),
         all_passed=bool(scan.results) and all(r.status is Status.PASS for r in scan.results),
     )

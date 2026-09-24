@@ -89,6 +89,27 @@ def test_not_reassessed_row_shows_last_seen_value() -> None:
     assert "not re-assessed in this scan" in html and "Last seen" in html and "<dt>Current</dt>" not in html
 
 
+def test_ecc_control_view_in_both_languages() -> None:
+    fresh = _scan(FRESH)
+    html = render_report(fresh, [fresh], "en")
+    assert 'data-control="2-2-3-1" data-evidence="technical_evidence_fail"' in html
+    assert 'data-control="2-2-3-5" data-evidence="not_assessed"' in html
+    assert "Single-factor authentication based on username and password." in html
+    assert "Planned checks" in html and "ACL-01" in html
+    ar = render_report(fresh, [fresh], "ar")
+    assert 'data-control="2-2-3-2" data-evidence="not_assessed"' in ar and "فاشل" in ar
+    assert '<bdi dir="ltr">&#34;Least Privilege&#34;</bdi>' in ar  # quotes keep their place in RTL text
+    fixed = _scan(FIXED)
+    assert 'data-control="2-2-3-1" data-evidence="technical_evidence_pass"' in render_report(fixed, [fixed], "en")
+
+
+def test_the_report_never_claims_compliance() -> None:
+    fresh = _scan(FRESH)
+    html = render_report(fresh, [fresh], "en").lower()
+    assert html.count("complian") == 1  # only in the limitation sentence: "... compliance is not assessed."
+    assert "compliant" not in html
+
+
 def test_mode_label_follows_the_scan() -> None:
     s = _scan(FIXED, mode="privileged")
     assert "Privileged assessment" in render_report(s, [s], "en")

@@ -1,0 +1,43 @@
+# NCA ECC-2:2024, subdomain 2-2 (Identity and Access Management), controls 2-2-3-x.
+# English: verbatim from the official English PDF. Arabic: transcribed from the rendered official Arabic PDF
+# (its text layer is unreliable). Sources and verification: docs/research/nca-ecc-mapping.md.
+# ADPulse reports technical evidence per control, never compliance (D13).
+# planned: checks of increments 3-6 that will map here; an implemented check leaves this list automatically.
+# reason: why the control is not assessed while no ADPulse check covers it.
+subdomain:
+  id: "2-2"
+  title:
+    en: "Identity and Access Management"
+    ar: "إدارة هويات الدخول والصلاحيات"
+controls:
+  - id: "2-2-3-1"
+    text:
+      en: "Single-factor authentication based on username and password."
+      ar: "التحقق من الهوية أحادي العنصر (Single-factor authentication) بناءً على إدارة تسجيل المستخدم، وإدارة كلمة المرور."
+    planned: [ACC-01, ACC-04, GPO-01]
+  - id: "2-2-3-2"
+    text:
+      en: "Multi-factor authentication, and defining the suitable authentication factors and their numbers as well as the suitable authentication techniques based on the result of impact assessment of authentication failure and bypass for remote access and for privileged accounts."
+      ar: "التحقق من الهوية متعدد العناصر (Multi-Factor Authentication) وتحديد عناصر التحقق المناسبة وعددها وكذلك تقنيات التحقق المناسبة بناء على نتائج تقييم الأثر المحتمل لفشل عملية التحقق وتخطيها، وذلك لعمليات الدخول عن بعد والحسابات ذات الصلاحيات الهامة والحساسة."
+    planned: []
+    reason:
+      en: "Active Directory alone cannot show multi-factor authentication; partial evidence (smart-card requirement, Protected Users membership) needs later checks."
+      ar: "لا يمكن إثبات التحقق متعدد العناصر من Active Directory وحده؛ والأدلة الجزئية (اشتراط البطاقة الذكية، وعضوية مجموعة Protected Users) تحتاج فحوصات لاحقة."
+  - id: "2-2-3-3"
+    text:
+      en: "User authorization based on identity and access control principles (Need-to-Know and Need-to-Use principle, Least Privilege principle, and Segregation of Duties principle)."
+      ar: 'إدارة تصاريح وصلاحيات المستخدمين (Authorization) بناءً على مبادئ التحكم بالدخول والصلاحيات (مبدأ الحاجة إلى المعرفة والاستخدام "Need-to-know and Need-to-use"، ومبدأ الحد الأدنى من الصلاحيات والامتيازات "Least Privilege"، ومبدأ فصل المهام "Segregation of Duties").'
+    planned: [ACL-01, ACL-03, DEL-05]
+  - id: "2-2-3-4"
+    text:
+      en: "Privileged access management."
+      ar: "إدارة الصلاحيات الهامة والحساسة (Privileged Access Management)."
+    planned: [DEL-01, KRB-01, KRB-02, KRB-03, PRV-04]
+  - id: "2-2-3-5"
+    text:
+      en: "Periodic review of identities and access rights."
+      ar: "المراجعة الدورية لهويات الدخول والصلاحيات."
+    planned: []
+    reason:
+      en: "Checks for the periodic review of identities and access rights come in later increments; the scan history below is the dated record of periodic assessment that supports this control."
+      ar: "فحوصات المراجعة الدورية لهويات الدخول والصلاحيات تأتي في مراحل لاحقة؛ وسجل عمليات الفحص أدناه هو السجل المؤرَّخ للتقييم الدوري الذي يدعم هذا الضابط."

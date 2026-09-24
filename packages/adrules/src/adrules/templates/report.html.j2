@@ -32,6 +32,9 @@
   .status.pass { color:var(--ok); } .status.fail { color:var(--high); }
   code { font-family: Consolas, monospace; }
   .fix { white-space: pre-line; }
+  .ev.technical_evidence_pass { color:var(--ok); } .ev.technical_evidence_fail { color:var(--high); }
+  .ctext { color:var(--muted); font-size:13px; margin-top:4px; }
+  .nowrap { white-space: nowrap; }
   @media (max-width: 640px) { dl { grid-template-columns: 1fr; } }
   @media print {
     body { background:#fff; color:#000; }
@@ -66,6 +69,20 @@
     <td>{% if r.rule_id in titles %}{{ titles[r.rule_id][lang]|bidi }}{% else %}{{ r.rule_id }}{% endif %}</td>
     <td class="status {{ r.status.value }}">{{ status[r.status.value] }}</td>
     <td>{{ r.reason|reason|bidi }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>{{ t.ecc_title }}</h2>
+<p class="coverage">{{ t.subdomain }} <bdi dir="ltr">{{ subdomain.id }}</bdi>: {{ subdomain.title[lang]|bidi }}</p>
+<table>
+  <tr><th>{{ t.control }}</th><th>{{ t.ev_status }}</th><th>{{ t.checks_title }}</th><th>{{ t.note }}</th></tr>
+  {% for c in controls %}
+  <tr data-control="{{ c.control_id }}" data-evidence="{{ c.status }}">
+    <td><code dir="ltr">{{ c.control_id }}</code><div class="ctext">{{ c.text[lang]|bidi }}</div></td>
+    <td class="ev {{ c.status }}">{{ evidence[c.status] }}</td>
+    <td>{% for k in c.checks %}<div class="nowrap"><code dir="ltr">{{ k.rule_id }}</code> <span class="status {{ k.status.value }}">{{ status[k.status.value] }}</span></div>{% endfor %}</td>
+    <td>{% if c.reason %}{{ c.reason[lang]|bidi }}{% endif %}{% if c.planned %}<div class="ctext">{{ t.planned }}: <bdi dir="ltr">{{ c.planned|join(", ") }}</bdi></div>{% endif %}</td>
   </tr>
   {% endfor %}
 </table>

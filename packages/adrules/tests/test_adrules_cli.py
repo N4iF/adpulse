@@ -23,6 +23,7 @@ def test_scan_twice_from_snapshots_writes_both_languages(tmp_path: Path) -> None
     r1 = CliRunner().invoke(app, ["scan", "--from-snapshot", str(_write(tmp_path, "d.json", FRESH, 1)), "--out-dir", str(out)])
     assert r1.exit_code == 0, r1.output
     assert "3 checks: 2 failed | new 2, open 0, resolved 0" in r1.output
+    assert "NCA ECC-2:2024 2-2-3 technical evidence: 1 fail, 0 pass, 4 not assessed" in r1.output
     r2 = CliRunner().invoke(app, ["scan", "--from-snapshot", str(_write(tmp_path, "f.json", FIXED, 2)), "--out-dir", str(out)])
     assert r2.exit_code == 0, r2.output
     assert "3 checks: 0 failed | new 0, open 0, resolved 2" in r2.output

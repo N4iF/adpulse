@@ -9,6 +9,7 @@ from pathlib import Path
 import typer
 
 from adrules.catalog import run_all
+from adrules.controls import ecc_view, summary
 from adrules.report import render_report
 from adrules.scan import build_scan, load_scans, previous_scan, save_scan
 from adsnap.model import Snapshot
@@ -74,6 +75,11 @@ def scan(
     typer.echo(
         f"{len(result.results)} checks: {result.failed()} failed | new {result.count('new')}, "
         f"open {result.count('open')}, resolved {result.count('resolved')}"
+    )
+    ecc = summary(ecc_view(result.results))
+    typer.echo(
+        f"NCA ECC-2:2024 2-2-3 technical evidence: {ecc['technical_evidence_fail']} fail, "
+        f"{ecc['technical_evidence_pass']} pass, {ecc['not_assessed']} not assessed"
     )
     for path in reports:
         typer.echo(f"report: {path}")
