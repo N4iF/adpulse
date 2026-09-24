@@ -43,8 +43,8 @@ A VMware snapshot revert also reverts the workspace on DC1's disk.
    revert its own machine.
 
 Snapshots: `clean` (domain built, dev tools installed, Active Directory unchanged) and `seeded` (after
-`Setup-Lab.ps1`: reader account and LDAPS ready, password policy still the Windows default — the demo's
-starting point; later increments add `Seed.ps1`). For the laptop demo, copy the VM folders (or export to
+`Setup-Lab.ps1` and, from increment 3, `Seed.ps1`: reader, LDAPS and the organization ready, password
+policy still the Windows default, no scans yet — the demo's starting point). For the laptop demo, copy the VM folders (or export to
 OVF) and open them in VMware on the laptop.
 
 ## Build
@@ -55,8 +55,9 @@ OVF) and open them in VMware on the laptop.
 | 2. Promote DC1 (new forest `corp.local`); join SRV01 to the domain | DC1 / SRV01, Naif — done |
 | 3. Install dev tools and Claude Code on DC1, create the workspace (`docs/SETUP.md`) | DC1, Naif — done |
 | 4. Snapshot `clean` | host, Naif — done |
-| 5. MVP-1: run `Setup-Lab.ps1` in an elevated PowerShell on DC1 | DC1 |
-| 6. Snapshot `seeded` | host, Naif |
+| 5. MVP-1: run `Setup-Lab.ps1` in an elevated PowerShell on DC1 | DC1 — done |
+| 6. Increment 3: run `Seed.ps1` in an elevated PowerShell on DC1 | DC1 |
+| 7. Snapshot `seeded` (retaken after `Seed.ps1`) | host, Naif |
 
 ## MVP-1 lab (D31, D33) — the only lab work before MVP-1 is green
 
@@ -84,32 +85,47 @@ but on a DC the Default Domain Policy GPO re-applies its own account-policy valu
 change made only on the domain object can therefore silently revert and produce a false "resolved" or
 a finding that comes back. The fix in the GPO itself is both the real-world remediation and stable.
 
-## Later increments — what the full `Seed.ps1` will create
+## Increment 3 lab — the organization (`Seed.ps1`)
 
-Not built before MVP-1 works. Each row arrives with its increment (numbers in `PROJECT-STATUS.md`). The
-DEL-01 item uses `SRV01` (domain-joined); the computer object `APP01` is the fallback. Any seed or fix
-that touches domain password or lockout settings goes through the Default Domain Policy GPO, never the
-domain object (D33).
+`Seed.ps1` (elevated PowerShell on DC1; Naif's OK; idempotent; never touches the password policy or
+`adpulse.reader`) turns the empty domain into a small organization, so findings appear among ordinary
+accounts. Random passwords, never printed or stored; nobody signs in with these accounts.
 
-| Item | Detail |
+| Object | Detail |
 |---|---|
-| OU `Lab`, groups `helpdesk`, users `svc_sql`, `svc_web`, `svc_backup`, `svc_legacy`, `temp.intern`, `contractor1`, `hd.user1` (member of helpdesk) | the cast |
-| DEL-01 | `TrustedForDelegation` on computer account `SRV01` (or `APP01`, a computer object only) |
-| DEL-05 | `ms-DS-MachineAccountQuota` left at the default 10 |
-| ACL-01 | both replication extended rights for `svc_backup` on the domain head (**not** helpdesk) |
-| ACL-03 | `GenericWrite` for `helpdesk` on `svc_sql` — the designed path edge |
-| PRV-04 | `svc_sql` has an SPN and is a member of Domain Admins |
-| KRB-01 | krbtgt never rotated since forest creation; `pwdLastSet` cannot be back-dated, so on a fresh lab the demo runs with `--krbtgt-max-age-days` low enough and the report states the threshold used |
-| KRB-02 | `DONT_REQ_PREAUTH` on `svc_legacy` |
-| KRB-03 | SPNs on `svc_sql`, `svc_web`, `svc_backup` |
-| GPO-01 | test GPO `Lab-Legacy` with a `Groups.xml` containing a `cpassword` in its SYSVOL folder (the collector never reads the value) |
-| ACC-01 | `PASSWD_NOTREQD` on enabled user `temp.intern` |
-| ACC-04 | `description` = "temp password: …" on `contractor1` |
-| PWD-01 | none needed: the Windows default minimum length (7) already fails |
+| `OU=Lab` → `Staff`, `ServiceAccounts`, `Groups`, `Servers` | the organization |
+| staff | `it.fahad`, `it.sara`, `hr.noura`, `hr.omar`, `fin.khalid`, `fin.lama`, `sales.reem`, `sales.yousef`, `ops.maha`, `ops.turki` — one department group each |
+| groups | `GRP-IT`, `GRP-HR`, `GRP-Finance`, `GRP-Sales`, `GRP-Operations`, `helpdesk` |
+| `hd.user1` | help desk agent, member of `helpdesk` |
+| `temp.intern`, `contractor1` | temporary staff |
+| service accounts | `svc_sql`, `svc_web`, `svc_backup`, `svc_legacy` |
+| `APP01` | computer object in `Servers` (no VM) |
 
-**Designed path (demo):** `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`. `Fix-ACL-03.ps1`
-removes the GenericWrite ACE, ACL-03 becomes `resolved` and the path disappears. No other seed may give
-`helpdesk` a route to Tier 0.
+**Seeds (weaknesses)** — each check sees its seed once the check exists:
+
+| Increment | Check | Seed |
+|---|---|---|
+| 3 | ACC-01 | `temp.intern`: password not required |
+| 3 | KRB-02 | `svc_legacy`: Kerberos pre-authentication off |
+| 4 | KRB-03 | SPNs on `svc_sql`, `svc_web`, `svc_backup` |
+| 4 | ACC-04 | `contractor1` description mentions a password (no real password in it) |
+| 4 | DEL-01 | `APP01` trusted for unconstrained delegation |
+| 4 | DEL-05 | machine account quota left at the default 10 |
+| 5 | ACL-01, ACL-03, PRV-04 | not seeded yet — see the note below |
+| 6 | GPO-01 | not seeded yet: an unlinked test GPO `Lab-Legacy` with a `cpassword` in `Groups.xml` |
+| 6 | KRB-01 | none possible: krbtgt was set at forest creation; the check's threshold is a parameter |
+| — | PWD-01, PWD-04 | none needed: the Windows defaults already fail |
+
+**Increment-3 demo loop:** from snapshot `seeded` → `uv run adrules scan` → 4 problems to fix (PWD-01,
+PWD-04, ACC-01 `temp.intern`, KRB-02 `svc_legacy`) → fix the password policy in the Default Domain Policy
+(above) and the two accounts with the commands shown in the report → `gpupdate /target:computer /force` →
+`uv run adrules scan` → 4 fixed.
+
+**Note for increment 5 (checked 2026-09-25):** the path first designed here — `helpdesk —GenericWrite→
+svc_sql —MemberOf→ Domain Admins` — does not hold. Members of Domain Admins are protected by
+AdminSDHolder: SDProp resets their permissions about every hour, which would remove the helpdesk ACE and
+break the demo. Increment 5 designs the path and its seeds again (ACL-01, ACL-03, PRV-04), and no seed may
+give `helpdesk` a second route to Tier 0.
 
 **Clean baseline (full scope):** besides PWD-01 and PWD-04 above, a default domain also fails DEL-05
 (default quota) and possibly KRB-01 (threshold-dependent); `expected-findings.yaml` records each baseline
@@ -121,8 +137,8 @@ result with reproducible evidence, every remediation causing the expected lifecy
 
 ## Scripts
 
-MVP-1: `Setup-Lab.ps1`. Later increments: `Seed.ps1`, `Drift.ps1`, one `Fix-<check>.ps1` per check. All
-run inside DC1 in an elevated PowerShell. Reset and export are VMware operations on the host (see
+`Setup-Lab.ps1` (MVP-1: reader and LDAPS) and `Seed.ps1` (increment 3: the organization and seeds). Later,
+if needed: `Drift.ps1`, `Fix-<check>.ps1`. All run inside DC1 in an elevated PowerShell. Reset and export are VMware operations on the host (see
 "Snapshot discipline"), not scripts.
 
 ## `.env` on DC1 (git-ignored, repo root, written by `Setup-Lab.ps1`)

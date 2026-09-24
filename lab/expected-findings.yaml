@@ -1,4 +1,27 @@
-# lab/expected-findings.yaml — ground truth, grows with each increment (lab/README.md)
-mvp1:
-  default_domain: [PWD-01, PWD-04]   # a fresh Windows Server 2022 domain (7 / complexity on / lockout 0)
-  after_fix: []                      # after the manual fix in the Default Domain Policy (lab/README.md)
+# lab/expected-findings.yaml — ground truth for the lab (lab/README.md), one schema for every increment.
+# Per lab state (a fixture recorded on DC1) and per check: the objects the check must flag.
+# A check that is not implemented yet is ignored until it lands. Every implemented check must be assessed
+# and must flag exactly these objects; a check missing from a state must flag nothing there.
+fixtures:
+  default_domain: lab-default.json   # fresh domain, default password policy, before Seed.ps1
+  seeded: lab-seeded.json            # after Seed.ps1, default password policy (the demo start)
+  after_fix: lab-fixed.json          # after the increment-3 demo fixes (policy and the two accounts)
+states:
+  default_domain:
+    PWD-01: [corp.local]
+    PWD-04: [corp.local]
+    DEL-05: [corp.local]             # increment 4: machine account quota left at the default 10
+  seeded:
+    PWD-01: [corp.local]
+    PWD-04: [corp.local]
+    ACC-01: [temp.intern]
+    KRB-02: [svc_legacy]
+    KRB-03: [svc_backup, svc_sql, svc_web]   # increment 4
+    ACC-04: [contractor1]                     # increment 4
+    DEL-01: [APP01]                           # increment 4
+    DEL-05: [corp.local]                      # increment 4
+  after_fix:
+    KRB-03: [svc_backup, svc_sql, svc_web]   # increment 4; not part of the increment-3 demo fixes
+    ACC-04: [contractor1]
+    DEL-01: [APP01]
+    DEL-05: [corp.local]
