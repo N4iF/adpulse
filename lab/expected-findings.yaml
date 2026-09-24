@@ -1,0 +1,4 @@
+# lab/expected-findings.yaml — ground truth, grows with each increment (lab/README.md)
+mvp1:
+  default_domain: [PWD-01, PWD-04]   # a fresh Windows Server 2022 domain (7 / complexity on / lockout 0)
+  after_fix: []                      # after the manual fix in the Default Domain Policy (lab/README.md)
