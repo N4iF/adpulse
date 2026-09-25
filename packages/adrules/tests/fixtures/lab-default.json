@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "snapshot": {
-    "id": "20260924T200246Z-corp.local",
-    "collected_at": "2026-09-24T20:02:46.012916Z",
+    "id": "20260925T115729Z-corp.local",
+    "collected_at": "2026-09-25T11:57:29.569999Z",
     "collector": {
       "name": "adsnap",
       "version": "0.0.1",
@@ -33,6 +33,78 @@
         "min_password_length": 7,
         "password_complexity": true,
         "lockout_threshold": 0
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "f45b53b8-aecf-4098-94dd-6980e7af270e",
+      "object_type": "user",
+      "dn": "CN=adpulse.reader,CN=Users,DC=corp,DC=local",
+      "name": "adpulse.reader",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1104",
+      "raw": {
+        "sAMAccountName": "adpulse.reader",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "dd10151c-f7d1-4ffa-9f3e-6341486e5dec",
+      "object_type": "user",
+      "dn": "CN=krbtgt,CN=Users,DC=corp,DC=local",
+      "name": "krbtgt",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-502",
+      "raw": {
+        "sAMAccountName": "krbtgt",
+        "userAccountControl": 514
+      },
+      "derived": {
+        "enabled": false,
+        "is_builtin": true,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "6a0b4d11-df41-481e-bdf2-53dac0677616",
+      "object_type": "user",
+      "dn": "CN=Guest,CN=Users,DC=corp,DC=local",
+      "name": "Guest",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-501",
+      "raw": {
+        "sAMAccountName": "Guest",
+        "userAccountControl": 66082
+      },
+      "derived": {
+        "enabled": false,
+        "is_builtin": true,
+        "passwd_notreqd": true,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "4186dfaa-d39e-46d6-83fe-b1580ff939f6",
+      "object_type": "user",
+      "dn": "CN=Administrator,CN=Users,DC=corp,DC=local",
+      "name": "Administrator",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-500",
+      "raw": {
+        "sAMAccountName": "Administrator",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": true,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
       },
       "security_descriptor": null
     }

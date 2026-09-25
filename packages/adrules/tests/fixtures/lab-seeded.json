@@ -1,0 +1,422 @@
+{
+  "schema_version": "1.0",
+  "snapshot": {
+    "id": "20260925T115949Z-corp.local",
+    "collected_at": "2026-09-25T11:59:49.161993Z",
+    "collector": {
+      "name": "adsnap",
+      "version": "0.0.1",
+      "auth": "simple",
+      "mode": "standard"
+    },
+    "domain": {
+      "object_id": "f00663f0-357f-437f-8833-618dab04bc14",
+      "dn": "DC=corp,DC=local",
+      "netbios": "CORP",
+      "sid": "S-1-5-21-1100996544-3009008355-3305678616",
+      "functional_level": null
+    }
+  },
+  "objects": [
+    {
+      "object_id": "f00663f0-357f-437f-8833-618dab04bc14",
+      "object_type": "domain",
+      "dn": "DC=corp,DC=local",
+      "name": "corp.local",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616",
+      "raw": {
+        "minPwdLength": 7,
+        "pwdProperties": 1,
+        "lockoutThreshold": 0
+      },
+      "derived": {
+        "min_password_length": 7,
+        "password_complexity": true,
+        "lockout_threshold": 0
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "458c89bd-228d-4f54-8ff3-b2c0a865c243",
+      "object_type": "user",
+      "dn": "CN=svc_legacy,OU=ServiceAccounts,OU=Lab,DC=corp,DC=local",
+      "name": "svc_legacy",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1623",
+      "raw": {
+        "sAMAccountName": "svc_legacy",
+        "userAccountControl": 4260352
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": true
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "5c318be8-67dd-4982-806f-6f84a00aae67",
+      "object_type": "user",
+      "dn": "CN=svc_backup,OU=ServiceAccounts,OU=Lab,DC=corp,DC=local",
+      "name": "svc_backup",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1622",
+      "raw": {
+        "sAMAccountName": "svc_backup",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "003cac16-a068-4a6c-b005-30f9b7bd0c3b",
+      "object_type": "user",
+      "dn": "CN=svc_web,OU=ServiceAccounts,OU=Lab,DC=corp,DC=local",
+      "name": "svc_web",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1621",
+      "raw": {
+        "sAMAccountName": "svc_web",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "189830c6-6238-4e02-8834-5594864c70d0",
+      "object_type": "user",
+      "dn": "CN=svc_sql,OU=ServiceAccounts,OU=Lab,DC=corp,DC=local",
+      "name": "svc_sql",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1620",
+      "raw": {
+        "sAMAccountName": "svc_sql",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "ba987258-e676-4e26-a1c3-f0dc554b3a3a",
+      "object_type": "user",
+      "dn": "CN=contractor1,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "contractor1",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1619",
+      "raw": {
+        "sAMAccountName": "contractor1",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "d369bad0-04b5-4e17-8d78-407f8283a65d",
+      "object_type": "user",
+      "dn": "CN=temp.intern,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "temp.intern",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1618",
+      "raw": {
+        "sAMAccountName": "temp.intern",
+        "userAccountControl": 66080
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": true,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "5581f08a-64f0-4739-856b-74d19bd6e8fb",
+      "object_type": "user",
+      "dn": "CN=hd.user1,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "hd.user1",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1617",
+      "raw": {
+        "sAMAccountName": "hd.user1",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "d56be99f-e19f-4d8f-b235-8439bb309a6b",
+      "object_type": "user",
+      "dn": "CN=ops.turki,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "ops.turki",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1616",
+      "raw": {
+        "sAMAccountName": "ops.turki",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "0d0a03ea-8b26-4658-afb9-91442a1438b7",
+      "object_type": "user",
+      "dn": "CN=ops.maha,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "ops.maha",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1615",
+      "raw": {
+        "sAMAccountName": "ops.maha",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "e88214bd-4275-42aa-a465-4f5700e2bff6",
+      "object_type": "user",
+      "dn": "CN=sales.yousef,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "sales.yousef",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1614",
+      "raw": {
+        "sAMAccountName": "sales.yousef",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "5eebbfb7-d0a9-456b-888a-5e3c02f2429c",
+      "object_type": "user",
+      "dn": "CN=sales.reem,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "sales.reem",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1613",
+      "raw": {
+        "sAMAccountName": "sales.reem",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "3be2a307-e141-48ec-a0dd-8178944a4950",
+      "object_type": "user",
+      "dn": "CN=fin.lama,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "fin.lama",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1612",
+      "raw": {
+        "sAMAccountName": "fin.lama",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "58005f3f-ce2e-468d-9707-f0872467acbb",
+      "object_type": "user",
+      "dn": "CN=fin.khalid,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "fin.khalid",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1611",
+      "raw": {
+        "sAMAccountName": "fin.khalid",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "8f358ef3-43b4-42ee-8092-52498e1de2dd",
+      "object_type": "user",
+      "dn": "CN=hr.omar,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "hr.omar",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1610",
+      "raw": {
+        "sAMAccountName": "hr.omar",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "62c59a4f-fba1-400f-8847-40b1f46670cc",
+      "object_type": "user",
+      "dn": "CN=hr.noura,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "hr.noura",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1609",
+      "raw": {
+        "sAMAccountName": "hr.noura",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "bd9bc170-f3e5-417e-8e21-4cce8d44f5fe",
+      "object_type": "user",
+      "dn": "CN=it.sara,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "it.sara",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1608",
+      "raw": {
+        "sAMAccountName": "it.sara",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "77eb599d-2b57-4ebd-a6ab-d1686420726e",
+      "object_type": "user",
+      "dn": "CN=it.fahad,OU=Staff,OU=Lab,DC=corp,DC=local",
+      "name": "it.fahad",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1607",
+      "raw": {
+        "sAMAccountName": "it.fahad",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "f45b53b8-aecf-4098-94dd-6980e7af270e",
+      "object_type": "user",
+      "dn": "CN=adpulse.reader,CN=Users,DC=corp,DC=local",
+      "name": "adpulse.reader",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-1104",
+      "raw": {
+        "sAMAccountName": "adpulse.reader",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": false,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "dd10151c-f7d1-4ffa-9f3e-6341486e5dec",
+      "object_type": "user",
+      "dn": "CN=krbtgt,CN=Users,DC=corp,DC=local",
+      "name": "krbtgt",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-502",
+      "raw": {
+        "sAMAccountName": "krbtgt",
+        "userAccountControl": 514
+      },
+      "derived": {
+        "enabled": false,
+        "is_builtin": true,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "6a0b4d11-df41-481e-bdf2-53dac0677616",
+      "object_type": "user",
+      "dn": "CN=Guest,CN=Users,DC=corp,DC=local",
+      "name": "Guest",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-501",
+      "raw": {
+        "sAMAccountName": "Guest",
+        "userAccountControl": 66082
+      },
+      "derived": {
+        "enabled": false,
+        "is_builtin": true,
+        "passwd_notreqd": true,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    },
+    {
+      "object_id": "4186dfaa-d39e-46d6-83fe-b1580ff939f6",
+      "object_type": "user",
+      "dn": "CN=Administrator,CN=Users,DC=corp,DC=local",
+      "name": "Administrator",
+      "object_sid": "S-1-5-21-1100996544-3009008355-3305678616-500",
+      "raw": {
+        "sAMAccountName": "Administrator",
+        "userAccountControl": 66048
+      },
+      "derived": {
+        "enabled": true,
+        "is_builtin": true,
+        "passwd_notreqd": false,
+        "asrep_roastable": false
+      },
+      "security_descriptor": null
+    }
+  ],
+  "coverage": {
+    "directory_objects": "full"
+  },
+  "errors": []
+}
