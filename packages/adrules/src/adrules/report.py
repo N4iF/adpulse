@@ -94,8 +94,9 @@ def reason_text(reason: str | None, lang: str) -> str:
     return reason
 
 
-# A run of Latin text (a GPMC path, a setting name, a number) inside Arabic text.
-_LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 <>.,:/'_$=\-]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
+# A run of Latin text (a GPMC path, a setting name, a PowerShell command) inside Arabic text. Inside a run,
+# also the punctuation an account name may hold; ';' stays out, so two commands stay two runs.
+_LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 <>.,:/'_$=\-()&!#%@^`{}~‘-‛]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
 
 
 def isolate_ltr(text: str) -> Markup:

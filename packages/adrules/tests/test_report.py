@@ -2,7 +2,9 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
-from adrules.catalog import run_all
+from markupsafe import escape
+
+from adrules.catalog import ps_literal, run_all
 from adrules.report import render_report
 from adrules.scan import ScanResult, build_scan
 from adsnap.model import CoverageLevel
@@ -133,6 +135,18 @@ def test_account_findings_name_the_account() -> None:
     ar = render_report(scan, [scan], "ar")
     assert "<dt>الحساب</dt>" in ar
     assert '<bdi dir="ltr">Set-ADUser &#39;temp.intern&#39; -PasswordNotRequired $false</bdi>' in ar  # the command stays in order
+
+
+def test_arabic_keeps_odd_but_legal_account_names_in_one_run() -> None:
+    # sAMAccountName allows punctuation ps_literal doesn't need to escape: ( ) & ! # % @ ^ ` { } ~ and
+    # typographic quotes (doubled by ps_literal). The command's <bdi> run must not fragment on it.
+    for name in ("svc(prod)", "a&b!#%@^~{x}", "o’neil"):  # o'neil with a typographic right quote
+        snap = make_snapshot(make_domain(**FIXED), make_user(name, rid=1105, passwd_notreqd=True),
+                             collected_at=datetime(2026, 10, 1, tzinfo=UTC))
+        scan = build_scan(snap, run_all(snap), None)
+        ar = render_report(scan, [scan], "ar")
+        command = f"Set-ADUser {ps_literal(name)} -PasswordNotRequired $false"
+        assert f'<bdi dir="ltr">{escape(command)}</bdi>' in ar, name
 
 
 def test_mode_label_follows_the_scan() -> None:
