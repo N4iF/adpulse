@@ -5,7 +5,7 @@
 fixtures:
   default_domain: lab-default.json   # fresh domain, default password policy, before Seed.ps1
   seeded: lab-seeded.json            # after Seed.ps1, default password policy (the demo start)
-  after_fix: lab-fixed.json          # after the increment-3 demo fixes (policy and the two accounts)
+  after_fix: lab-fixed.json          # after the demo fixes (policy, temp.intern, svc_legacy, APP01$, quota)
 states:
   default_domain:
     PWD-01: [corp.local]
@@ -18,10 +18,8 @@ states:
     KRB-02: [svc_legacy]
     KRB-03: [svc_backup, svc_sql, svc_web]   # increment 4
     ACC-04: [contractor1]                     # increment 4
-    DEL-01: [APP01]                           # increment 4
+    DEL-01: [APP01$]                          # increment 4 (accounts are named by sAMAccountName)
     DEL-05: [corp.local]                      # increment 4
-  after_fix:
-    KRB-03: [svc_backup, svc_sql, svc_web]   # increment 4; not part of the increment-3 demo fixes
-    ACC-04: [contractor1]
-    DEL-01: [APP01]
-    DEL-05: [corp.local]
+  after_fix:                                  # the demo fixes DEL-01 and DEL-05 too; these stay open (increment 4 plan)
+    KRB-03: [svc_backup, svc_sql, svc_web]   # the real fix is a gMSA or a long random password, planned with the owner
+    ACC-04: [contractor1]                     # the contractor's password must change too

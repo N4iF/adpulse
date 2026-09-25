@@ -123,6 +123,33 @@ PWD-04, ACC-01 `temp.intern`, KRB-02 `svc_legacy`) → fix the password policy i
 (above) and the two accounts with the commands shown in the report → `gpupdate /target:computer /force` →
 `uv run adrules scan` → 4 fixed.
 
+## Increment 4 lab — four plain-attribute checks (no script changes)
+
+The increment-4 seeds are already in place from `Seed.ps1` (table above): SPNs on the three service accounts
+(KRB-03), a password mentioned in `contractor1`'s description (ACC-04), `APP01` trusted for unconstrained
+delegation (DEL-01) and the machine account quota left at 10 (DEL-05). Accounts are named by their
+sAMAccountName, so the computer is `APP01$`; the fix commands in the report use that name. Never flagged:
+`DC1` (every domain controller is trusted for delegation), `krbtgt` (it has the SPN `kadmin/changepw`),
+`SRV01` and the built-in descriptions.
+
+| Lab state | Problems |
+|---|---|
+| `reader-ready` → `lab-default.json` | 3: PWD-01, PWD-04, DEL-05 |
+| `seeded` → `lab-seeded.json` | 10: DEL-01 `APP01$` · ACC-01 · KRB-02 · KRB-03 ×3 · ACC-04 · DEL-05 · PWD-01 · PWD-04 |
+| after the demo fixes → `lab-fixed.json` | 4 still open: KRB-03 ×3, ACC-04 |
+
+**Increment-4 demo loop:** from snapshot `seeded` → `uv run adrules scan` → 10 problems to fix → the
+administrator fixes six by hand:
+- The password policy in the Default Domain Policy (above), then `gpupdate /target:computer /force`.
+- `temp.intern` and `svc_legacy` with the commands in the report.
+- `Set-ADAccountControl 'APP01$' -TrustedForDelegation $false`.
+- `Set-ADDomain (Get-ADDomain) -Replace @{'ms-DS-MachineAccountQuota'=0}`. The quota is set on the domain
+  object: unlike the password settings (D33), no GPO re-applies it.
+
+Then `uv run adrules scan` shows 6 fixed and 4 still open. The three service accounts need a gMSA or a long
+random password, planned with their owner, and the contractor needs a new password; ADPulse keeps tracking
+them.
+
 **Note for increment 5 (checked 2026-09-25):** the path first designed here — `helpdesk —GenericWrite→
 svc_sql —MemberOf→ Domain Admins` — does not hold. Members of Domain Admins are protected by
 AdminSDHolder: SDProp resets their permissions about every hour, which would remove the helpdesk ACE and
