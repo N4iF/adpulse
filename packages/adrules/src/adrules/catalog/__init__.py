@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.resources
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -57,14 +58,27 @@ class Rule:
     evaluate: Evaluator
 
 
+def ps_literal(value: str) -> str:
+    """`value` as a PowerShell single-quoted string, so nothing in it is expanded or run.
+
+    Every PowerShell single-quote character (' and the typographic ‘ ’ ‚ ‛) is doubled, as
+    CodeGeneration.EscapeSingleQuotedStringContent does.
+    """
+    return "'" + re.sub("(['‘’‚‛])", r"\1\1", value) + "'"
+
+
 def finding(meta: RuleMeta, obj: ADObject, evidence: dict[str, Any], *, confidence: Confidence = "high") -> Finding:
+    """One finding on `obj`; `<account>` in the remediation becomes its name, ready to paste into PowerShell."""
+    name = ps_literal(obj.name)
     return Finding(
         rule_id=meta.id,
         category=meta.category,
         severity=meta.severity,
         title=meta.title,
         why_it_matters=meta.why_it_matters,
-        remediation=meta.remediation,
+        remediation=Localized(
+            en=meta.remediation.en.replace("<account>", name), ar=meta.remediation.ar.replace("<account>", name)
+        ),
         affected_object=obj.object_id,
         affected_object_type=obj.object_type,
         affected_name=obj.name,

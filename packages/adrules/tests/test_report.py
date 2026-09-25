@@ -129,9 +129,10 @@ def test_account_findings_name_the_account() -> None:
     en = render_report(scan, [scan], "en")
     assert "Account can be used with an empty password <span class=\"muted\">· <bdi dir=\"ltr\">temp.intern</bdi></span>" in en
     assert "<dt>Account</dt>" in en
+    assert "Set-ADUser &#39;temp.intern&#39; -PasswordNotRequired $false" in en  # ready to paste
     ar = render_report(scan, [scan], "ar")
     assert "<dt>الحساب</dt>" in ar
-    assert '<bdi dir="ltr">Set-ADUser &lt;account&gt; -PasswordNotRequired $false</bdi>' in ar  # the command stays in order
+    assert '<bdi dir="ltr">Set-ADUser &#39;temp.intern&#39; -PasswordNotRequired $false</bdi>' in ar  # the command stays in order
 
 
 def test_mode_label_follows_the_scan() -> None:

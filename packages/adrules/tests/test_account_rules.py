@@ -39,6 +39,22 @@ def test_krb_02_flags_enabled_accounts_without_preauthentication() -> None:
     assert r.findings[0].evidence["expected"] == "Kerberos pre-authentication required"
 
 
+def test_fix_commands_name_the_account() -> None:
+    acc = _run("ACC-01", make_user("temp.intern", rid=1105, passwd_notreqd=True)).findings[0].remediation
+    krb = _run("KRB-02", make_user("svc_legacy", rid=1110, asrep_roastable=True)).findings[0].remediation
+    for text in (acc.en, acc.ar):
+        assert "Set-ADAccountPassword 'temp.intern' -Reset; Set-ADUser 'temp.intern' -PasswordNotRequired $false" in text
+    for text in (krb.en, krb.ar):
+        assert "Set-ADAccountControl 'svc_legacy' -DoesNotRequirePreAuth $false" in text
+    assert "<account>" not in acc.en + acc.ar + krb.en + krb.ar
+
+
+def test_an_account_name_cannot_break_out_of_the_fix_command() -> None:
+    # A sAMAccountName may hold $, ( ) and quotes; pasted unquoted, "$(...)" would run in PowerShell.
+    fix = _run("KRB-02", make_user("a'b’$(calc)", rid=1400, asrep_roastable=True)).findings[0].remediation.en
+    assert "Set-ADAccountControl 'a''b’’$(calc)' -DoesNotRequirePreAuth $false" in fix
+
+
 def test_healthy_accounts_pass() -> None:
     users = (make_user("it.fahad", rid=1112), make_user("Administrator", rid=500))
     assert _run("ACC-01", *users).status is Status.PASS
