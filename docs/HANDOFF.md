@@ -7,9 +7,9 @@ Assistant memory is disposable; the repos are the truth. Follow this checklist e
 
 1. Run the checks and note failures honestly in the status file:
    ```bash
-   uv run pytest && uv run ruff check
+   uv run pytest -rs; uv run ruff check; uv run mypy
    ```
-   (exit code 5 = no tests collected yet; that is fine until the first test exists.)
+   (`-rs` lists skipped tests: a skipped lab truth-table test means its fixture still needs recording.)
 2. Update `PROJECT-STATUS.md` (engine content only): **Phase**, **Done**, **Next actions** (numbered,
    specific, the first one startable without thinking), **Blockers**. If non-engine work changed
    (registration, team, pitch), update `adpulse-notes/STATUS.md` instead.

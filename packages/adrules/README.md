@@ -30,4 +30,7 @@ Planned later: `adrules paths snapshot.json --from "CORP\\helpdesk" --to tier0` 
 
 ## Status
 
-Skeleton only; MVP-1 (PWD-01, PWD-02, PWD-04, D31) is being built, tests first.
+Built: `catalog/` with PWD-01, PWD-02, PWD-04 (MVP-1), ACC-01 and KRB-02 (increment 3); the Finding model;
+`adrules scan` with the new / open / resolved lifecycle and the EN and AR reports; the NCA ECC-2:2024 2-2-3
+view (`controls`, increment 2). Not yet: `prioritize/`, `graph/`, `tier0/` (later increments). Current
+state: `PROJECT-STATUS.md`.

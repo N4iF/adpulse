@@ -13,7 +13,7 @@ scripts all run there. The host PC only runs VMware and holds the snapshots. Set
 ```
 VMware Workstation — one network 192.168.50.0/24 with internet access
   DC1     192.168.50.10    dc1.corp.local   — AD DS, DNS, LDAPS (after Setup-Lab.ps1), dev tools, Claude Code
-  SRV01   192.168.50.210   srv01.corp.local — domain-joined Windows 10 client (the later DEL-01 target)
+  SRV01   192.168.50.210   srv01.corp.local — domain-joined Windows 10 client
 ```
 
 No AD CS, no extra VMs, no scale seeding in Phase 1 (D29). Use the real DNS name `dc1.corp.local`
@@ -56,7 +56,7 @@ OVF) and open them in VMware on the laptop.
 | 3. Install dev tools and Claude Code on DC1, create the workspace (`docs/SETUP.md`) | DC1, Naif — done |
 | 4. Snapshot `clean` | host, Naif — done |
 | 5. MVP-1: run `Setup-Lab.ps1` in an elevated PowerShell on DC1 | DC1 — done |
-| 6. Increment 3: run `Seed.ps1` in an elevated PowerShell on DC1 | DC1 |
+| 6. Increment 3: run `Seed.ps1` in an elevated PowerShell on DC1 | DC1 — done 2026-09-25 |
 | 7. Snapshot `seeded` (retaken after `Seed.ps1`) | host, Naif |
 
 ## MVP-1 lab (D31, D33) — the only lab work before MVP-1 is green
@@ -71,7 +71,7 @@ the "before" state, and the fix is made by hand, the way an administrator would 
 **Demo loop:**
 
 1. Fresh domain (minimum length 7, complexity on, lockout threshold 0) → `uv run adrules scan` →
-   3 checks: 2 failed (PWD-01, PWD-04), 1 passed (PWD-02); new 2.
+   2 failed (PWD-01, PWD-04), the other checks passed; new 2.
 2. Fix it as an administrator would: Group Policy Management → Default Domain Policy → Edit → Computer
    Configuration → Policies → Windows Settings → Security Settings → Account Policies. Password Policy:
    minimum password length 14. Account Lockout Policy: threshold 5, duration and reset counter 15 minutes.
@@ -96,7 +96,7 @@ accounts. Random passwords, never printed or stored; nobody signs in with these 
 | `OU=Lab` → `Staff`, `ServiceAccounts`, `Groups`, `Servers` | the organization |
 | staff | `it.fahad`, `it.sara`, `hr.noura`, `hr.omar`, `fin.khalid`, `fin.lama`, `sales.reem`, `sales.yousef`, `ops.maha`, `ops.turki` — one department group each |
 | groups | `GRP-IT`, `GRP-HR`, `GRP-Finance`, `GRP-Sales`, `GRP-Operations`, `helpdesk` |
-| `hd.user1` | help desk agent, member of `helpdesk` |
+| `hd.user1` | help desk agent, member of `helpdesk` and `GRP-IT` |
 | `temp.intern`, `contractor1` | temporary staff |
 | service accounts | `svc_sql`, `svc_web`, `svc_backup`, `svc_legacy` |
 | `APP01` | computer object in `Servers` (no VM) |

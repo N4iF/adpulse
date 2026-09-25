@@ -19,11 +19,13 @@ findings among ordinary accounts, not in an empty domain.
     still aborts (no snapshot).
 - **Test builders:** `make_user(name, rid=…, **derived)` with safe defaults (reference Task 2 subset).
 - **Rules:** `acc_01` and `krb_02` (YAML + Python, bilingual, NCA ECC 2-2-3-1 and 2-2-3-4, ATT&CK T1078.002
-  and T1558.004). One finding per account. Evidence: account, setting, current, required. If the snapshot
+  and T1558.004). One finding per account. Evidence: account, setting, current, expected. If the snapshot
   holds no user objects at all (e.g. an old domain-only snapshot) the rules raise `NotAssessed` — never a pass.
   ACC-01 has no exclusion beyond `enabled`: the built-in Guest carries the flag but is disabled by default; an
   enabled Guest without a required password is a real finding.
-- **Report:** the card title names the object ("… · temp.intern"); "Account" joins the evidence labels. The
+- **Report:** the card title names the object ("… · temp.intern"); "Account" joins the evidence labels; the
+  fix commands name the account, ready to paste: `<account>` in a rule's remediation text becomes the name as
+  a PowerShell single-quoted literal, so a name such as `x$(…)` can never run when pasted. The
   ECC view picks the new checks up automatically: 2-2-3-4 gets its first evidence (KRB-02).
 - **Ground truth:** `lab/expected-findings.yaml` becomes one schema for all increments — per lab state, per
   check, the objects that must be flagged. A check not implemented yet is ignored until it lands; every
@@ -63,15 +65,30 @@ helpdesk ACE. Increment 5 redesigns the path. GPO-01 (increment 6) is also later
 
 ## Lab steps (with Naif)
 
-1. Code and `Seed.ps1` pushed (tests, ruff, mypy green; review).
+Corrected on 2026-09-25 before running them: the fixtures are committed before the snapshot, the old
+snapshot is kept, fixtures come from `adsnap collect` (never from `adrules scan`), and Naif types the account
+fixes (`Set-ADAccountPassword -Reset` asks for the password; the agent's shell cannot answer a prompt).
+Commands run from `C:\ADPulse\adpulse` in Windows PowerShell 5.1.
+
+1. Code and `Seed.ps1` pushed (tests, ruff, mypy green; review). — done
 2. Naif reverts DC1 to snapshot `seeded` (default policy, reader, LDAPS, no scans); `git pull` in both repos.
-3. `adsnap collect` → `lab-default.json` (fresh domain, new collector).
-4. `.\lab\Seed.ps1` (elevated) → `adsnap collect` → `lab-seeded.json`.
-5. Naif retakes snapshot `seeded` (now with the organization and seeds) — the new demo starting point.
-6. `adrules scan` → 4 problems to fix (PWD-01, PWD-04, ACC-01 temp.intern, KRB-02 svc_legacy).
-7. Fix by hand: the password policy in the Default Domain Policy (as in MVP-1) and the two accounts with
-   the commands in the report → `gpupdate /force` → `adrules scan` → 4 fixed → `lab-fixed.json`.
-8. Truth table green on the three fixtures; docs, status, build log; push.
+   — done
+3. `uv run adsnap collect --out packages\adrules\tests\fixtures\lab-default.json` (fresh domain, new
+   collector). — done: 5 objects, full coverage, no errors
+4. `.\lab\Seed.ps1` (elevated) twice — the second run must report "nothing changed" → `uv run adsnap collect
+   --out packages\adrules\tests\fixtures\lab-seeded.json` → commit and push both fixtures (a snapshot keeps
+   only what is pushed). — done: 22 objects; only `temp.intern` and `svc_legacy` carry the seeded flags
+5. Naif (VMware Snapshot Manager): rename the old `seeded` to `reader-ready` and keep it — it is the only
+   state before `Seed.ps1`, needed to record `lab-default.json` again when the collector reads more
+   (increment 4); then take a new snapshot `seeded` (organization and seeds, no scans) — the new demo start.
+6. `uv run adrules scan` → 4 problems to fix (PWD-01, PWD-04, ACC-01 temp.intern, KRB-02 svc_legacy).
+7. Naif, in his own elevated PowerShell: the password policy in the Default Domain Policy (as in MVP-1) →
+   `gpupdate /target:computer /force`; then the two accounts with the commands in the report
+   (`Set-ADAccountPassword 'temp.intern' -Reset` asks for a new password — 14 characters or more after the
+   policy fix). Agent: `uv run adrules scan` → 4 fixed → `uv run adsnap collect --out
+   packages\adrules\tests\fixtures\lab-fixed.json`. Never re-run `Seed.ps1` after this step: it re-applies
+   the seeds.
+8. Truth table green on the three fixtures (0 skipped); docs, status, build log; push.
 
 ## Done when
 

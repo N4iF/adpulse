@@ -21,10 +21,11 @@ Active Directory snapshot collector and versioned snapshot schema. Part of the A
   `docs/architecture.md`.
 - Connect with the DC's DNS name (e.g. `dc1.corp.local`), not its IP: LDAPS validates the hostname.
 
-MVP-1 (D31) reads only the domain object (password and lockout policy) with a simple bind over LDAPS; the
-rest of the list above arrives with later increments.
+Today it reads the domain object (password and lockout policy, MVP-1) and every user account (increment 3;
+only `sAMAccountName` and `userAccountControl` are stored) with a simple bind over LDAPS; the rest of the
+list above arrives with later increments.
 
-## CLI (MVP-1)
+## CLI
 
 ```powershell
 uv run adsnap collect --out snapshot.json   # connection settings come from .env (docs/SETUP.md §5)
@@ -33,4 +34,4 @@ uv run adsnap collect --out snapshot.json --insecure-lab   # lab only: skip cert
 
 ## Status
 
-Skeleton only; MVP-1 is being built (`docs/superpowers/plans/2026-09-24-mvp1.md`).
+Built: the domain object (MVP-1) and user accounts (increment 3). Current state: `PROJECT-STATUS.md`.

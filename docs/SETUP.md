@@ -2,7 +2,8 @@
 
 Primary machine: **the lab domain controller `DC1`** (Windows Server 2022 in VMware, D30, D32). The same steps
 work on the host PC or the laptop. Commands are Windows PowerShell 5.1. Steps marked **[admin]** need an
-elevated PowerShell; Naif does them, an AI session cannot.
+elevated PowerShell; Naif does them. (An AI session on DC1 may run the `lab/` scripts elevated with Naif's
+OK; it installs nothing.)
 
 ## 1. Tools (Windows Server 2022 has no winget; use the official installers)
 
@@ -53,7 +54,7 @@ not move between machines.
 ```powershell
 Set-Location C:\ADPulse\adpulse
 uv sync             # installs adsnap and adrules (editable) + dev tools from uv.lock
-uv run pytest       # exit code 5 = "no tests collected"; expected until the first test exists
+uv run pytest       # all pass; the lab truth-table tests skip until their fixtures are recorded
 uv run ruff check
 uv run mypy
 ```

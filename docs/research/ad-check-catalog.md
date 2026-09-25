@@ -26,7 +26,7 @@ was replaced by PWD-01 on 2026-09-23, D29: it needs an AD CS server, which is Ti
 | KRB-03 | High | user `kerberoastable` and `enabled` | not krbtgt | 2-2-3-4 |
 | PWD-01 | High | domain `min_password_length` < 12 | threshold is a documented parameter | 2-2-3-1 |
 | GPO-01 | Critical | gpo `gpp_cpassword_files` non-empty | `not_assessed` when coverage `gpo_files` = none | 2-2-3-1 |
-| ACC-01 | High | user `passwd_notreqd` and `enabled` | not built-in Guest (RID 501, disabled by default) | 2-2-3-1 |
+| ACC-01 | High | user `passwd_notreqd` and `enabled` | none beyond `enabled`: the built-in Guest carries the flag but is disabled by default; an enabled Guest is a real finding | 2-2-3-1 |
 | ACC-04 | High | user `password_in_text_indicator` | evidence = attribute names only, never values | 2-2-3-1 |
 
 Designed lab path for the demo: `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`
