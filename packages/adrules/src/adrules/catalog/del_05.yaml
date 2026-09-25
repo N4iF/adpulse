@@ -1,0 +1,18 @@
+id: DEL-05
+category: delegation
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "Any user can add computers to the domain"
+  ar: "يستطيع أي مستخدم إضافة أجهزة إلى المجال"
+why_it_matters:
+  en: "While the machine account quota is above 0, every user may join computers to the domain (10 by default). A computer account created this way is a common first step in attacks that take over other computers."
+  ar: "ما دامت حصة حسابات الأجهزة أكبر من 0 يستطيع كل مستخدم ضمّ أجهزة إلى المجال (10 أجهزة افتراضياً)؛ وحساب الجهاز المُنشأ بهذه الطريقة خطوة أولى شائعة في هجمات تستولي على أجهزة أخرى."
+remediation:
+  en: "Set the machine account quota to 0 and let only a dedicated group join computers to the domain (delegate 'Create Computer objects' on the OU for computers).\nPowerShell (as an administrator): Set-ADDomain (Get-ADDomain) -Replace @{'ms-DS-MachineAccountQuota'=0}"
+  ar: "اجعل حصة حسابات الأجهزة 0، واسمح لمجموعة مخصصة فقط بضمّ الأجهزة إلى المجال (فوّض صلاحية «Create Computer objects» على الوحدة التنظيمية للأجهزة).\nفي PowerShell (بصلاحيات المسؤول): Set-ADDomain (Get-ADDomain) -Replace @{'ms-DS-MachineAccountQuota'=0}"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-3"]
+attack_techniques: ["T1136.002"]  # ADPulse's mapping; neither MITRE nor PingCastle names a technique for this
+matches_pingcastle_rule: "S-ADRegistration"  # PingCastle also accepts a Group Policy that limits 'Add workstations to domain'
+evidence_source: "ms-DS-MachineAccountQuota on the domain object (a Group Policy that limits 'Add workstations to domain' is not read yet)"

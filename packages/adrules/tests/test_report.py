@@ -8,17 +8,18 @@ from adrules.catalog import ps_literal, run_all
 from adrules.report import render_report
 from adrules.scan import ScanResult, build_scan
 from adsnap.model import CoverageLevel
-from adsnap.testing import make_domain, make_snapshot, make_user
+from adsnap.testing import make_computer, make_domain, make_snapshot, make_user
 
 # Tests may not import each other (pytest --import-mode=importlib), so each file keeps its own helper.
 WEAK = dict(min_password_length=6, password_complexity=False, lockout_threshold=0)
 FIXED = dict(min_password_length=14, password_complexity=True, lockout_threshold=5)
 FRESH = dict(min_password_length=7, password_complexity=True, lockout_threshold=0)
+DC = make_computer("DC1$", rid=1000, is_dc=True, unconstrained_delegation=True)  # every domain has one
 
 
 def _scan(domain: dict[str, Any], previous: ScanResult | None = None, day: int = 1,
           coverage: dict[str, CoverageLevel] | None = None, mode: Any = "standard") -> ScanResult:
-    snap = make_snapshot(make_domain(**domain), make_user("Administrator", rid=500), collected_at=datetime(2026, 10, day, tzinfo=UTC), coverage=coverage, mode=mode)
+    snap = make_snapshot(make_domain(**domain), make_user("Administrator", rid=500), DC, collected_at=datetime(2026, 10, day, tzinfo=UTC), coverage=coverage, mode=mode)
     return build_scan(snap, run_all(snap), previous)
 
 
@@ -36,7 +37,7 @@ def test_it_first_view_shows_what_to_fix_before_anything_else() -> None:
     s1 = _scan(FRESH)
     html = render_report(s1, [s1], "en")
     assert '<html lang="en" dir="ltr">' in html and "Standard-user assessment" in html
-    assert 'data-tile="to_fix">2<' in html and 'data-tile="fixed">0<' in html and 'data-tile="passed">3<' in html
+    assert 'data-tile="to_fix">2<' in html and 'data-tile="fixed">0<' in html and 'data-tile="passed">7<' in html
     main = _without_grc(html)
     assert main.index("What to fix") < main.index("All checks") < main.index("Scan history")
     assert main.index("Minimum password length is too short") < main.index("Accounts never lock")  # high before medium
@@ -96,9 +97,9 @@ def test_all_passed_only_when_every_check_passed() -> None:
 
 def test_not_checked_is_visible_in_the_tiles_and_reasons_are_translated() -> None:
     blind = _scan(FIXED, coverage={"directory_objects": CoverageLevel.NONE})
-    assert 'data-tile="not_assessed">5<' in render_report(blind, [blind], "en")
+    assert 'data-tile="not_assessed">9<' in render_report(blind, [blind], "en")
     ar = render_report(blind, [blind], "ar")
-    assert 'data-tile="not_assessed">5<' in ar
+    assert 'data-tile="not_assessed">9<' in ar
     assert "coverage directory_objects is none" not in ar and "لم تُجمع بيانات" in ar
     clean = _scan(FIXED)
     assert 'data-tile="not_assessed"' not in render_report(clean, [clean], "en")
@@ -147,6 +148,24 @@ def test_arabic_keeps_odd_but_legal_account_names_in_one_run() -> None:
         ar = render_report(scan, [scan], "ar")
         command = f"Set-ADUser {ps_literal(name)} -PasswordNotRequired $false"
         assert f'<bdi dir="ltr">{escape(command)}</bdi>' in ar, name
+
+
+def test_arabic_keeps_a_command_or_note_that_ends_in_a_bracket_in_one_run() -> None:
+    snap = make_snapshot(make_domain(**FRESH, machine_account_quota=10), make_user("Administrator", rid=500),
+                         make_user("svc_sql", rid=1120, spns=["MSSQLSvc/app01.corp.local:1433"], kerberoastable=True),
+                         DC, collected_at=datetime(2026, 10, 1, tzinfo=UTC))
+    ar = render_report(build_scan(snap, run_all(snap), None), [], "ar")
+    assert '<bdi dir="ltr">Set-ADDomain (Get-ADDomain) -Replace @{&#39;ms-DS-MachineAccountQuota&#39;=0}</bdi>' in ar
+    assert '<bdi dir="ltr">servicePrincipalName on enabled user accounts (krbtgt excluded)</bdi>' in ar
+    assert '(يوصى بـ <bdi dir="ltr">14</bdi>)' in ar  # a bracket opened in Arabic stays outside
+
+
+def test_arabic_translates_the_reasons_of_checks_that_could_not_run() -> None:
+    snap = make_snapshot(make_domain(**FIXED, machine_account_quota=None), collected_at=datetime(2026, 10, 1, tzinfo=UTC))
+    ar = render_report(build_scan(snap, run_all(snap), None), [], "ar")
+    assert "was not collected" not in ar and "accounts were collected" not in ar
+    assert "لم يُقرأ <bdi dir=\"ltr\">ms-DS-MachineAccountQuota</bdi> من كائن المجال" in ar
+    assert "لم تُجمع حسابات المستخدمين" in ar and "لم تُجمع حسابات الأجهزة" in ar
 
 
 def test_mode_label_follows_the_scan() -> None:

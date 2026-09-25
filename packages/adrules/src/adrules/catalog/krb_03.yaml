@@ -1,0 +1,18 @@
+id: KRB-03
+category: kerberos
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "Service account password can be guessed offline (Kerberoasting)"
+  ar: "يمكن تخمين كلمة مرور حساب الخدمة دون اتصال (Kerberoasting)"
+why_it_matters:
+  en: "Any signed-in user can ask for a ticket to this account's service and try to guess the account's password on their own computer, with no lockout and nothing to see on the account. Service account passwords are often old and rarely changed."
+  ar: "يستطيع أي مستخدم مسجَّل الدخول أن يطلب تذكرة لخدمة هذا الحساب ثم يحاول تخمين كلمة مرور الحساب على جهازه، دون قفل للحساب ودون أثر يظهر عليه. وكلمات مرور حسابات الخدمة غالباً قديمة ونادراً ما تُغيَّر."
+remediation:
+  en: "Move the service to a group Managed Service Account (gMSA): its password is long, random and changed automatically. If that is not possible, allow only AES encryption and give the account a long random password (Microsoft: at least 14 characters; longer is better). Remove service principal names that are no longer used.\nPowerShell (as an administrator): Set-ADUser <account> -KerberosEncryptionType AES128,AES256; Set-ADAccountPassword <account> -Reset"
+  ar: "انقل الخدمة إلى حساب خدمة مُدار للمجموعة (gMSA)، فكلمة مروره طويلة وعشوائية وتتغير تلقائياً. وإن تعذّر ذلك فاسمح بتشفير AES فقط وعيّن للحساب كلمة مرور طويلة وعشوائية (توصي Microsoft بـ 14 حرفاً على الأقل، والأطول أفضل). واحذف أسماء الخدمة (SPN) التي لم تعد مستخدمة.\nفي PowerShell (بصلاحيات المسؤول): Set-ADUser <account> -KerberosEncryptionType AES128,AES256; Set-ADAccountPassword <account> -Reset"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-4"]
+attack_techniques: ["T1558.003"]
+matches_pingcastle_rule: null  # P-Kerberoasting covers members of admin groups only
+evidence_source: "servicePrincipalName on enabled user accounts (krbtgt excluded)"

@@ -67,18 +67,28 @@ def ps_literal(value: str) -> str:
     return "'" + re.sub("(['‘’‚‛])", r"\1\1", value) + "'"
 
 
-def finding(meta: RuleMeta, obj: ADObject, evidence: dict[str, Any], *, confidence: Confidence = "high") -> Finding:
-    """One finding on `obj`; `<account>` in the remediation becomes its name, ready to paste into PowerShell."""
-    name = ps_literal(obj.name)
+def finding(
+    meta: RuleMeta, obj: ADObject, evidence: dict[str, Any], *, confidence: Confidence = "high",
+    fill: dict[str, str] | None = None,
+) -> Finding:
+    """One finding on `obj`; `<account>` in the remediation becomes its name, ready to paste into PowerShell.
+
+    `fill` sets other placeholders (e.g. `<attributes>`); its values come from the rule, never from the directory.
+    """
+    values = {"<account>": ps_literal(obj.name), **(fill or {})}
+
+    def filled(text: str) -> str:
+        for placeholder, value in values.items():
+            text = text.replace(placeholder, value)
+        return text
+
     return Finding(
         rule_id=meta.id,
         category=meta.category,
         severity=meta.severity,
         title=meta.title,
         why_it_matters=meta.why_it_matters,
-        remediation=Localized(
-            en=meta.remediation.en.replace("<account>", name), ar=meta.remediation.ar.replace("<account>", name)
-        ),
+        remediation=Localized(en=filled(meta.remediation.en), ar=filled(meta.remediation.ar)),
         affected_object=obj.object_id,
         affected_object_type=obj.object_type,
         affected_name=obj.name,
@@ -90,15 +100,24 @@ def finding(meta: RuleMeta, obj: ADObject, evidence: dict[str, Any], *, confiden
     )
 
 
+def _accounts(snapshot: Snapshot, object_type: ObjectType, kind: str, fields: tuple[str, ...]) -> list[ADObject]:
+    accounts = snapshot.by_type(object_type)
+    if not accounts:
+        raise NotAssessed(f"no {kind} accounts were collected")
+    known = [a for a in accounts if all(a.derived.get(f) is not None for f in fields)]
+    if not known:
+        raise NotAssessed(f"{', '.join(fields)} could not be read on any {kind} account")
+    return sorted(known, key=lambda a: a.name.lower())
+
+
 def user_accounts(snapshot: Snapshot, *fields: str) -> list[ADObject]:
     """User accounts whose `fields` were collected, sorted by name; NotAssessed when there are none."""
-    users = snapshot.by_type(ObjectType.USER)
-    if not users:
-        raise NotAssessed("no user accounts were collected")
-    known = [u for u in users if all(u.derived.get(f) is not None for f in fields)]
-    if not known:
-        raise NotAssessed(f"{', '.join(fields)} could not be read on any user account")
-    return sorted(known, key=lambda u: u.name.lower())
+    return _accounts(snapshot, ObjectType.USER, "user", fields)
+
+
+def computer_accounts(snapshot: Snapshot, *fields: str) -> list[ADObject]:
+    """Computer accounts whose `fields` were collected, sorted by name; NotAssessed when there are none."""
+    return _accounts(snapshot, ObjectType.COMPUTER, "computer", fields)
 
 
 def load_catalog() -> list[Rule]:

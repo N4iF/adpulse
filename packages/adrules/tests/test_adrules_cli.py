@@ -6,15 +6,16 @@ from typing import Any
 from typer.testing import CliRunner
 
 from adrules.cli import app
-from adsnap.testing import make_domain, make_snapshot, make_user
+from adsnap.testing import make_computer, make_domain, make_snapshot, make_user
 
 FRESH = dict(min_password_length=7, password_complexity=True, lockout_threshold=0)
 FIXED = dict(min_password_length=14, password_complexity=True, lockout_threshold=5)
+DC = make_computer("DC1$", rid=1000, is_dc=True, unconstrained_delegation=True)  # every domain has one
 
 
 def _write(tmp_path: Path, name: str, domain: dict[str, Any], day: int) -> Path:
     p = tmp_path / name
-    p.write_text(make_snapshot(make_domain(**domain), make_user("Administrator", rid=500), collected_at=datetime(2026, 10, day, tzinfo=UTC)).model_dump_json(), encoding="utf-8")
+    p.write_text(make_snapshot(make_domain(**domain), make_user("Administrator", rid=500), DC, collected_at=datetime(2026, 10, day, tzinfo=UTC)).model_dump_json(), encoding="utf-8")
     return p
 
 
@@ -22,11 +23,11 @@ def test_scan_twice_from_snapshots_writes_both_languages(tmp_path: Path) -> None
     out = tmp_path / "scans"
     r1 = CliRunner().invoke(app, ["scan", "--from-snapshot", str(_write(tmp_path, "d.json", FRESH, 1)), "--out-dir", str(out)])
     assert r1.exit_code == 0, r1.output
-    assert "5 checks: 2 failed | new 2, open 0, resolved 0" in r1.output
-    assert "NCA ECC-2:2024 2-2-3 technical evidence: 1 fail, 1 pass, 3 not assessed" in r1.output
+    assert "9 checks: 2 failed | new 2, open 0, resolved 0" in r1.output
+    assert "NCA ECC-2:2024 2-2-3 technical evidence: 1 fail, 2 pass, 2 not assessed" in r1.output
     r2 = CliRunner().invoke(app, ["scan", "--from-snapshot", str(_write(tmp_path, "f.json", FIXED, 2)), "--out-dir", str(out)])
     assert r2.exit_code == 0, r2.output
-    assert "5 checks: 0 failed | new 0, open 0, resolved 2" in r2.output
+    assert "9 checks: 0 failed | new 0, open 0, resolved 2" in r2.output
     assert len(list(out.glob("*.scan.json"))) == 2
     assert len(list(out.glob("*.en.html"))) == 2 and len(list(out.glob("*.ar.html"))) == 2
 

@@ -1,0 +1,18 @@
+id: DEL-01
+category: delegation
+severity: critical
+requires_coverage: [directory_objects]
+title:
+  en: "Account can act as any user who connects to it (unconstrained delegation)"
+  ar: "حساب يستطيع التصرف باسم أي مستخدم يتصل به (تفويض غير مقيَّد)"
+why_it_matters:
+  en: "Everyone who connects to a service running under this account, administrators included, leaves a reusable Kerberos ticket on it. Whoever controls the account or its computer can take those tickets and act as those users, up to a domain administrator."
+  ar: "كل من يتصل بخدمة تعمل بهذا الحساب، ومنهم المسؤولون، يترك عليه تذكرة Kerberos قابلة لإعادة الاستخدام؛ ومن يسيطر على الحساب أو على جهازه يستطيع أخذ هذه التذاكر والتصرف باسم أصحابها، حتى باسم مسؤول المجال."
+remediation:
+  en: "Turn off unconstrained delegation on the account. If a service on it really needs delegation, use constrained or resource-based constrained delegation instead.\nActive Directory Users and Computers: the account → Delegation tab → 'Do not trust this computer for delegation' (for a user: 'Do not trust this user for delegation').\nPowerShell (as an administrator): Set-ADAccountControl <account> -TrustedForDelegation $false"
+  ar: "أوقف التفويض غير المقيَّد على الحساب. وإن احتاجت خدمة عليه إلى التفويض فعلاً فاستخدم التفويض المقيَّد أو التفويض المقيَّد القائم على المورد بدلاً منه.\nActive Directory Users and Computers: الحساب ← تبويب Delegation ← «Do not trust this computer for delegation» (وللمستخدم: «Do not trust this user for delegation»).\nفي PowerShell (بصلاحيات المسؤول): Set-ADAccountControl <account> -TrustedForDelegation $false"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-4"]
+attack_techniques: ["T1187", "T1550.003"]
+matches_pingcastle_rule: "P-UnconstrainedDelegation"  # PingCastle also counts disabled accounts, as ADPulse does
+evidence_source: "userAccountControl bit 0x80000 (TRUSTED_FOR_DELEGATION) on user and computer accounts; domain controllers (primaryGroupID 516 or 521) excluded"

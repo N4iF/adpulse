@@ -80,7 +80,11 @@ STATUS = {
 _REASONS_AR = [
     (re.compile(r"^coverage (.+) is none$"), "لم تُجمع بيانات: {0}"),
     (re.compile(r"^rule needs privileged collection$"), "يتطلب جمع البيانات بصلاحيات مرتفعة"),
-    (re.compile(r"^(\w+) was not collected from the domain object$"), "لم يُقرأ {0} من كائن المجال"),
+    (re.compile(r"^([\w-]+) was not collected from the domain object$"), "لم يُقرأ {0} من كائن المجال"),
+    (re.compile(r"^no user accounts were collected$"), "لم تُجمع حسابات المستخدمين"),
+    (re.compile(r"^no computer accounts were collected$"), "لم تُجمع حسابات الأجهزة"),
+    (re.compile(r"^(.+) could not be read on any user account$"), "تعذّرت قراءة {0} على كل حسابات المستخدمين"),
+    (re.compile(r"^(.+) could not be read on any computer account$"), "تعذّرت قراءة {0} على كل حسابات الأجهزة"),
 ]
 
 
@@ -99,14 +103,24 @@ def reason_text(reason: str | None, lang: str) -> str:
 _LTR_RUN = re.compile(r"\"?(?:[A-Za-z0-9][A-Za-z0-9 <>.,:/'_$=\-()&!#%@^`{}~‘-‛]*[A-Za-z0-9]|[A-Za-z0-9])\"?")  # quotes stay with their words
 
 
+_OPENER = {")": "(", "}": "{"}
+
+
 def isolate_ltr(text: str) -> Markup:
-    """Escape `text` and wrap each Latin run in <bdi dir="ltr"> so it keeps its order inside RTL text."""
+    """Escape `text` and wrap each Latin run in <bdi dir="ltr"> so it keeps its order inside RTL text.
+
+    A run takes a closing bracket that it opened itself (`@{…}`, `(krbtgt excluded)`); a bracket opened in the
+    Arabic text stays outside, with the Arabic.
+    """
     parts: list[str] = []
     pos = 0
-    for match in _LTR_RUN.finditer(text):
-        parts.append(escape(text[pos:match.start()]))
-        parts.append(Markup('<bdi dir="ltr">') + escape(match.group()) + Markup("</bdi>"))
-        pos = match.end()
+    while match := _LTR_RUN.search(text, pos):
+        start, end = match.span()
+        while end < len(text) and text[end] in _OPENER and text.count(_OPENER[text[end]], start, end) > text.count(text[end], start, end):
+            end += 1
+        parts.append(escape(text[pos:start]))
+        parts.append(Markup('<bdi dir="ltr">') + escape(text[start:end]) + Markup("</bdi>"))
+        pos = end
     parts.append(escape(text[pos:]))
     return Markup("").join(parts)
 

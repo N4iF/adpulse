@@ -1,0 +1,18 @@
+id: ACC-04
+category: accounts
+severity: high
+requires_coverage: [directory_objects]
+title:
+  en: "A password may be written in the account's description or notes"
+  ar: "قد تكون كلمة مرور مكتوبة في وصف الحساب أو ملاحظاته"
+why_it_matters:
+  en: "Every user in the domain can read an account's description and notes. A password written there is a password everyone can see."
+  ar: "يستطيع أي مستخدم في المجال قراءة وصف الحساب وملاحظاته، فأي كلمة مرور مكتوبة هناك يراها الجميع."
+remediation:
+  en: "Remove the password from the setting named above (or clear it), then change the account's password: assume it has been read.\nPowerShell (as an administrator): Set-ADUser <account> -Clear <attributes>; Set-ADAccountPassword <account> -Reset"
+  ar: "احذف كلمة المرور من الإعداد المذكور أعلاه (أو امسحه)، ثم غيّر كلمة مرور الحساب، وافترض أنها قُرئت.\nفي PowerShell (بصلاحيات المسؤول): Set-ADUser <account> -Clear <attributes>; Set-ADAccountPassword <account> -Reset"
+control_mappings:
+  nca_ecc_2_2024: ["2-2-3-1"]
+attack_techniques: ["T1552"]  # no sub-technique covers a directory attribute (T1552.001 is files)
+matches_pingcastle_rule: null
+evidence_source: "description, info and comment on user accounts, matched against password words in English and Arabic; the text is never stored"
