@@ -22,7 +22,7 @@ DEFAULT_COVERAGE: dict[str, CoverageLevel] = {"directory_objects": CoverageLevel
 
 
 def make_domain(**derived: Any) -> ADObject:
-    d: dict[str, Any] = {"min_password_length": 14, "password_complexity": True, "lockout_threshold": 5}
+    d: dict[str, Any] = {"min_password_length": 14, "password_complexity": True, "lockout_threshold": 5, "machine_account_quota": 0}
     d.update(derived)
     return ADObject(
         object_id="guid-domain",
@@ -35,12 +35,30 @@ def make_domain(**derived: Any) -> ADObject:
 
 
 def make_user(name: str, *, rid: int, **derived: Any) -> ADObject:
-    d: dict[str, Any] = {"enabled": True, "is_builtin": rid in (500, 501, 502), "passwd_notreqd": False, "asrep_roastable": False}
+    d: dict[str, Any] = {
+        "enabled": True, "is_builtin": rid in (500, 501, 502), "passwd_notreqd": False, "asrep_roastable": False,
+        "unconstrained_delegation": False, "spns": [], "kerberoastable": False,
+        "password_in_text_indicator": False, "password_in_text_attrs": [],
+    }
     d.update(derived)
     return ADObject(
         object_id=f"guid-{name}",
         object_type=ObjectType.USER,
         dn=f"CN={name},{DOMAIN_DN}",
+        name=name,
+        object_sid=f"{DOMAIN_SID}-{rid}",
+        derived=d,
+    )
+
+
+def make_computer(name: str, *, rid: int, **derived: Any) -> ADObject:
+    """A computer account named like AD names it (`APP01$`); by default a member, not trusted for delegation."""
+    d: dict[str, Any] = {"is_dc": False, "unconstrained_delegation": False}
+    d.update(derived)
+    return ADObject(
+        object_id=f"guid-{name}",
+        object_type=ObjectType.COMPUTER,
+        dn=f"CN={name.rstrip('$')},CN=Computers,{DOMAIN_DN}",
         name=name,
         object_sid=f"{DOMAIN_SID}-{rid}",
         derived=d,
