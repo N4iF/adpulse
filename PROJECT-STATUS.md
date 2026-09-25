@@ -5,10 +5,12 @@ non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — MVP-1 and increment 2 done (2026-09-24); next: increment 3.** Three password-policy checks
-work end to end inside the lab DC (collect → rules → findings → HTML reports → fix → rescan shows
-resolved), and the report shows the NCA ECC-2:2024 2-2-3 control view. Everything else arrives as numbered
-increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
+**Phase 1 — MVP-1 and increments 2–3 done (2026-09-25); next: increment 4.** Five checks work end to end
+inside the lab DC (collect → rules → findings → HTML reports → fix → rescan shows resolved): three on the
+password policy and two on user accounts, each account named with a ready-to-paste fix command. The lab is
+a small organization with seeded weaknesses (snapshot `seeded`); the report leads with what to fix and
+shows the NCA ECC-2:2024 2-2-3 view on demand. Everything else arrives as numbered increments. Development
+runs inside the lab DC `DC1` in VMware (D30, D32).
 
 ## Done
 
@@ -45,11 +47,13 @@ increments. Development runs inside the lab DC `DC1` in VMware (D30, D32).
   ground-truth schema for all increments. 92 tests pass (the 3 lab fixtures are re-recorded in the lab
   steps below); live read-only collection from DC1 works (4 accounts, 0.8 s). Not yet: `Seed.ps1` run,
   fixtures re-recorded.
-- 2026-09-25: **Increment 3 lab steps 1–4** (lab steps corrected first, see the plan): the report's fix
-  commands now name the account as a PowerShell literal (no more `<account>`); `lab-default.json` recorded
-  (5 objects); `Seed.ps1` run on DC1 — 17 users, 6 groups, `APP01`; a second run changed nothing; only
-  `temp.intern` (password not required) and `svc_legacy` (no pre-authentication) carry the seeded flags;
-  policy still 7 / on / 0; `lab-seeded.json` recorded (22 objects). Truth table green on both; 95 tests pass.
+- 2026-09-25: **Increment 3 done in the lab** (lab steps corrected first, see the plan). The report's fix
+  commands name the account as a PowerShell literal (no more `<account>`), also in one left-to-right run in
+  Arabic. `Seed.ps1` run on DC1 (17 users, 6 groups, `APP01`; a second run changed nothing); the old
+  snapshot kept as `reader-ready`, new `seeded` taken. Live: 4 failed, new 4 (ECC 2 fail) → Naif fixed the
+  Default Domain Policy and the two accounts → 0 failed, resolved 4 (ECC 2 pass). Fixtures `lab-default`
+  (5 objects), `lab-seeded` and `lab-fixed` (22 each) recorded; truth table green on all three, none
+  skipped; 98 tests pass, ruff and mypy clean. DC1 is left in the after-fix state.
 
 ## Next actions (in order)
 
@@ -57,12 +61,9 @@ Tags: **[agent]** = an AI session; **[Naif]** = Naif (VMware, Group Policy Manag
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Increment 3 lab step 5: rename the old snapshot `seeded` to `reader-ready` (keep it) and take a new `seeded`. | [Naif] |
-| 2 | Lab step 6: `uv run adrules scan` → 4 problems; check both reports. | [agent on DC1] |
-| 3 | Lab step 7: fix the Default Domain Policy and the two accounts (own elevated console); then rescan → 4 fixed; record `lab-fixed.json`. | [Naif, then agent] |
-| 4 | Lab step 8: truth table green on all three fixtures (0 skipped); docs pass; status; build log; push. | [agent on DC1] |
-| 5 | Increments 4–6 in order: 4 more plain-attribute checks (the seeds are already in the lab) · 5 permissions and one path (redesign the path: AdminSDHolder, see `lab/README.md`) · 6 SYSVOL, krbtgt age, regressed. | [agent] |
-| 6 | Rehearse the demo from `seeded` and time each step. | [Naif] |
+| 1 | Increment 4, plan first: KRB-03, ACC-04, DEL-05, DEL-01 (seeds already in the lab). The collector must read SPNs, a password indicator in descriptions (never the text), the machine account quota and computers with delegation flags; exclude krbtgt (it has an SPN) and domain controllers (trusted for delegation). Fixtures: record `lab-fixed.json` first from DC1's current after-fix state, then `lab-seeded` from `seeded` and `lab-default` from `reader-ready` (push before each revert). | [agent] |
+| 2 | Increments 5–6 in order: 5 permissions and one path (redesign the path: AdminSDHolder, see `lab/README.md`) · 6 SYSVOL, krbtgt age, regressed. | [agent] |
+| 3 | Rehearse the demo from `seeded` (script in the notes repo, 4 problems) and time each step. | [Naif] |
 
 ## Blockers / open questions
 
@@ -77,7 +78,7 @@ English and Arabic (printable); lifecycle new / open / resolved. Demo: the fresh
 PWD-04 and passes PWD-02; after the manual fix both are resolved (D33).
 
 **Increments (in order, each small and demo-worthy):** 2 ECC control view (done) · 3 account flags (ACC-01,
-KRB-02) · 4 plain-attribute checks (KRB-03, ACC-04, DEL-05, DEL-01) · 5 permissions and one potential
+KRB-02; done) · 4 plain-attribute checks (KRB-03, ACC-04, DEL-05, DEL-01) · 5 permissions and one potential
 privilege-escalation path (ACL-01, ACL-03, PRV-04) · 6 SYSVOL (GPO-01), krbtgt age (KRB-01), regressed.
 Increments 1–6 together are the October ceiling (the former "Tier A").
 

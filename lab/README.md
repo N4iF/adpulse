@@ -31,7 +31,8 @@ everywhere (LDAPS validates the host name); older documents that say `DC01` mean
 | DC time source | internet NTP (`time.windows.com`, `pool.ntp.org`), set 2026-09-24 |
 | Python on DC1 | 3.12.0 (per-user install), used by `uv` |
 | Snapshot `clean` taken | 2026-09-24 |
-| Snapshot `seeded` taken | 2026-09-24 (after `Setup-Lab.ps1`, before any scan) |
+| Snapshot `reader-ready` | 2026-09-24 (after `Setup-Lab.ps1`, before `Seed.ps1` and any scan; taken as `seeded`, renamed 2026-09-25) |
+| Snapshot `seeded` taken | 2026-09-25 (after `Seed.ps1`, before any scan — the demo start) |
 
 ## Snapshot discipline
 
@@ -42,9 +43,10 @@ A VMware snapshot revert also reverts the workspace on DC1's disk.
 3. Naif takes and reverts snapshots on the host (VMware UI or `vmrun`); a session inside the VM cannot
    revert its own machine.
 
-Snapshots: `clean` (domain built, dev tools installed, Active Directory unchanged) and `seeded` (after
-`Setup-Lab.ps1` and, from increment 3, `Seed.ps1`: reader, LDAPS and the organization ready, password
-policy still the Windows default, no scans yet — the demo's starting point). For the laptop demo, copy the VM folders (or export to
+Snapshots: `clean` (domain built, dev tools installed, Active Directory unchanged), `reader-ready` (after
+`Setup-Lab.ps1`: reader and LDAPS, no organization — revert here to record `lab-default.json` again when the
+collector reads more) and `seeded` (after `Seed.ps1` too: the organization and its seeds, password policy
+still the Windows default, no scans yet — the demo's starting point). For the laptop demo, copy the VM folders (or export to
 OVF) and open them in VMware on the laptop.
 
 ## Build
@@ -57,7 +59,7 @@ OVF) and open them in VMware on the laptop.
 | 4. Snapshot `clean` | host, Naif — done |
 | 5. MVP-1: run `Setup-Lab.ps1` in an elevated PowerShell on DC1 | DC1 — done |
 | 6. Increment 3: run `Seed.ps1` in an elevated PowerShell on DC1 | DC1 — done 2026-09-25 |
-| 7. Snapshot `seeded` (retaken after `Seed.ps1`) | host, Naif |
+| 7. Snapshot `seeded` (retaken after `Seed.ps1`; the old one kept as `reader-ready`) | host, Naif — done 2026-09-25 |
 
 ## MVP-1 lab (D31, D33) — the only lab work before MVP-1 is green
 

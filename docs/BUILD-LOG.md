@@ -108,3 +108,16 @@ This log, together with the git history, is the honest timeline of the project.
   increments. Two-reviewer check (engine, `Seed.ps1`): the engine reviewer ran a live collection as the
   reader and confirmed ldap3's behaviour from its source; `Seed.ps1` clean (cmdlets verified against this
   PS 5.1/WS2022 install, idempotent, no SPN collisions); two low findings fixed. 92 tests pass.
+- **Increment 3 done in the lab.** A fresh-session review (six readers, each checked by a second) found
+  that the lab steps would overwrite the only pre-seed snapshot, left the new fixtures uncommitted before the
+  snapshot, and that the report's fix commands printed a literal `<account>`; the steps were corrected
+  first. Fix commands now name the account as a PowerShell single-quoted literal (every PowerShell quote
+  character doubled; a reviewer confirmed with the PowerShell 5.1 parser that a name cannot break out), and
+  the Arabic report keeps such a command in one left-to-right run even for names with punctuation. On DC1:
+  `lab-default.json` (5 objects) → `Seed.ps1` (17 users, 6 groups, `APP01`; a second run changed nothing;
+  password policy untouched) → `lab-seeded.json` (22 objects) → Naif renamed the old snapshot to
+  `reader-ready` and took a new `seeded` → live scan: 4 failed, new 4, ECC 2 fail, both account cards named
+  → Naif fixed the Default Domain Policy (14 / on / 5, 15 minutes) and the two accounts in his own console
+  → rescan: 0 failed, resolved 4, ECC 2 pass → `lab-fixed.json`. Truth table green on all three fixtures,
+  none skipped; 98 tests pass; ruff and mypy clean. Stale docs fixed (package READMEs, the plan pointer in
+  `CLAUDE.md`, the ACC-01 catalog note, lab README, SETUP, HANDOFF). DC1 left in the after-fix state.

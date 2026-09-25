@@ -81,14 +81,16 @@ Commands run from `C:\ADPulse\adpulse` in Windows PowerShell 5.1.
 5. Naif (VMware Snapshot Manager): rename the old `seeded` to `reader-ready` and keep it — it is the only
    state before `Seed.ps1`, needed to record `lab-default.json` again when the collector reads more
    (increment 4); then take a new snapshot `seeded` (organization and seeds, no scans) — the new demo start.
+   — done
 6. `uv run adrules scan` → 4 problems to fix (PWD-01, PWD-04, ACC-01 temp.intern, KRB-02 svc_legacy).
+   — done: `5 checks: 4 failed | new 4`; ECC `2 fail, 0 pass, 3 not assessed`; both reports name the accounts
 7. Naif, in his own elevated PowerShell: the password policy in the Default Domain Policy (as in MVP-1) →
    `gpupdate /target:computer /force`; then the two accounts with the commands in the report
    (`Set-ADAccountPassword 'temp.intern' -Reset` asks for a new password — 14 characters or more after the
    policy fix). Agent: `uv run adrules scan` → 4 fixed → `uv run adsnap collect --out
    packages\adrules\tests\fixtures\lab-fixed.json`. Never re-run `Seed.ps1` after this step: it re-applies
-   the seeds.
-8. Truth table green on the three fixtures (0 skipped); docs, status, build log; push.
+   the seeds. — done: policy 14 / on / 5 (15 min); rescan `0 failed | resolved 4`; ECC `0 fail, 2 pass`
+8. Truth table green on the three fixtures (0 skipped); docs, status, build log; push. — done
 
 ## Done when
 

@@ -90,7 +90,7 @@ Rules never read `raw`; they read `derived` fields and the parsed `security_desc
 | What was built when | `docs/BUILD-LOG.md` |
 | Setup on a new machine | `docs/SETUP.md` |
 | Design spec | `docs/superpowers/specs/2026-09-22-adpulse-design.md` |
-| **Plan being executed** (finished plans stay as reference: MVP-1 with its "Corrections", increment 2) | `docs/superpowers/plans/2026-09-25-increment3-accounts.md` |
+| **Latest plan** (done; each increment writes its plan first; finished plans stay as reference: MVP-1 with its "Corrections", increment 2) | `docs/superpowers/plans/2026-09-25-increment3-accounts.md` |
 | Reference plan for later increments (not plug-in; see the MVP-1 plan's forward-compatibility notes) | `docs/superpowers/plans/2026-09-23-phase1-engine.md` |
 | Check catalog (104 checks) and the twelve of increments 1–6 (former Tier A) | `docs/research/ad-check-catalog.md` |
 | Lab contract, prerequisites, designed path | `lab/README.md` |
