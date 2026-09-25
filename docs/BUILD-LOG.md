@@ -121,3 +121,19 @@ This log, together with the git history, is the honest timeline of the project.
   → rescan: 0 failed, resolved 4, ECC 2 pass → `lab-fixed.json`. Truth table green on all three fixtures,
   none skipped; 98 tests pass; ruff and mypy clean. Stale docs fixed (package READMEs, the plan pointer in
   `CLAUDE.md`, the ACC-01 catalog note, lab README, SETUP, HANDOFF). DC1 left in the after-fix state.
+- **Increment 4 (code).** Plan first, checked before approval by three reviewers against the code and DC1
+  (read-only and `-WhatIf`): they found that `Set-ADAccountControl 'APP01'` cannot find the computer (hence
+  accounts are named by sAMAccountName, `APP01$`), that a bare `pass` would flag "Pass-the-hash notes", and
+  that the reference plan's DEL-05 would pass when the quota is missing. `adsnap`: the domain quota, users'
+  SPNs and unconstrained delegation, password words in description/info/comment (English and Arabic, word
+  boundaries; the text is read, matched and dropped), computers with `is_dc` (516/521) and delegation; a
+  failed computer query is partial coverage. `adrules`: DEL-01 (users and non-DC computers, enabled or not;
+  PingCastle `P-UnconstrainedDelegation`), KRB-03 (krbtgt excluded; the SPNs are the evidence), ACC-04
+  (T1552), DEL-05 (`S-ADRegistration`; not assessed when the quota is unread); the truth table skips only
+  clean recordings by an older collector. A three-lens code review then found five more issues, all fixed
+  with tests: ACC-04's command cleared `description` whatever matched (now `-Clear <attributes>`), a missing
+  computer list could hide a user DEL-01 finding (each side read separately; a pass needs both), the Arabic
+  report dropped a closing `}`/`)` out of its left-to-right run, DEL-05's not-assessed reason was not
+  translated, and Arabic password words needed any spacing. Live read-only check on DC1: exactly KRB-03 ×3,
+  ACC-04, DEL-01 `APP01$`, DEL-05 (DC1, SRV01, krbtgt not flagged; no free text stored). 139 tests pass (3
+  lab fixtures to re-record); ruff and mypy clean.

@@ -113,17 +113,17 @@ ACL checks read `security_descriptor.aces[]`. Every other Tier A input is one of
 
 | Field | Type | On | Source | Coverage | Used by |
 |---|---|---|---|---|---|
-| `enabled` | bool | user, computer | `userAccountControl` bit 0x2 not set | directory_objects | DEL-01, PRV-04, KRB-02, KRB-03, ACC-01 |
+| `enabled` | bool | user | `userAccountControl` bit 0x2 not set | directory_objects | PRV-04, KRB-02, KRB-03, ACC-01 |
 | `is_dc` | bool | computer | `primaryGroupID` 516 or 521 | directory_objects | DEL-01, Tier 0 |
-| `is_builtin` | bool | user | RID 500 (Administrator), 501 (Guest), 502 (krbtgt), `krbtgt_<n>` | directory_objects | ACC-01, PRV-04, KRB-03 exclusions |
-| `unconstrained_delegation` | bool | user, computer | `userAccountControl` bit 0x80000 | directory_objects | DEL-01 |
-| `spn_count` | int | user, computer | number of `servicePrincipalName` values | directory_objects | PRV-04, KRB-03 |
-| `kerberoastable` | bool | user | `spn_count` > 0 and not krbtgt (gMSA/MSA are not `user`) | directory_objects | KRB-03, PRV-04 |
+| `is_builtin` | bool | user | RID 500 (Administrator), 501 (Guest), 502 (krbtgt), `krbtgt_<n>` | directory_objects | PRV-04 exclusions |
+| `unconstrained_delegation` | bool | user, computer | `userAccountControl` bit 0x80000 (enabled or not) | directory_objects | DEL-01 |
+| `spns` | list[str] | user | the `servicePrincipalName` values, sorted ([] when none) | directory_objects | KRB-03 evidence, PRV-04 |
+| `kerberoastable` | bool | user | `spns` not empty and not krbtgt (RID 502, `krbtgt_<n>`; a built-in Administrator with an SPN counts; gMSA/MSA are not `user`) | directory_objects | KRB-03, PRV-04 |
 | `asrep_roastable` | bool | user | `userAccountControl` bit 0x400000 | directory_objects | KRB-02 |
 | `admin_count` | int | user, group, computer | `adminCount` (0 when absent) | directory_objects | PRV-04 |
 | `password_age_days` | int or null | user, computer | `collected_at` − `pwdLastSet`; null when 0 | directory_objects | KRB-01 |
 | `passwd_notreqd` | bool | user | `userAccountControl` bit 0x20 | directory_objects | ACC-01 |
-| `password_in_text_indicator` | bool | user | `description`/`info`/`comment` matched case-insensitively against `pass`, `pwd`, `كلمة المرور`, `كلمة السر`; values never stored | directory_objects | ACC-04 |
+| `password_in_text_indicator` | bool | user | `description`/`info`/`comment` contain a password word, case-insensitive: `password`, `passwd`, `passphrase`, `pwd` as words (a letter may not touch them, a digit may), `pass:` or `pass=`, `كلمة المرور`, `كلمة مرور`, `كلمة السر`, `كلمة سر` (so not `bypass`, `passport`, `Pass-the-hash`); values never stored | directory_objects | ACC-04 |
 | `password_in_text_attrs` | list[str] | user | attribute names that matched | directory_objects | ACC-04 |
 | `member_of` | list[object_id] | user, group, computer | `memberOf` + the `primaryGroupID` group | directory_objects | Tier 0 |
 | `machine_account_quota` | int | domain | `ms-DS-MachineAccountQuota` | directory_objects | DEL-05 |

@@ -155,6 +155,7 @@ DC1 is now in the increment-3 after-fix state. There are two reverts, each after
 1. Code pushed (tests, ruff and mypy green; review). Then a read-only check of DC1 as it is:
    `uv run adsnap collect --out $env:TEMP\inc4.json`, then `uv run adrules evaluate $env:TEMP\inc4.json`.
    Expect KRB-03 ×3, ACC-04, DEL-01 `APP01$` and DEL-05. `DC1`, `SRV01` and `krbtgt` must not be flagged.
+   — done 2026-09-25: exactly those; 25 objects, no errors, no free text in the snapshot
 2. Naif reverts DC1 to `reader-ready`. The agent runs `git pull` in both repos, then `uv run adsnap collect
    --out packages\adrules\tests\fixtures\lab-default.json`, checks it against the truth table, commits and
    pushes.

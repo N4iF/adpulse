@@ -5,7 +5,7 @@ non-engine status lives in the private `adpulse-notes/STATUS.md`._
 
 ## Phase
 
-**Phase 1 — MVP-1 and increments 2–3 done (2026-09-25); next: increment 4.** Five checks work end to end
+**Phase 1 — MVP-1 and increments 2–3 done; increment 4 code done (2026-09-25), its lab steps next.** Five checks work end to end
 inside the lab DC (collect → rules → findings → HTML reports → fix → rescan shows resolved): three on the
 password policy and two on user accounts, each account named with a ready-to-paste fix command. The lab is
 a small organization with seeded weaknesses (snapshot `seeded`); the report leads with what to fix and
@@ -54,6 +54,12 @@ runs inside the lab DC `DC1` in VMware (D30, D32).
   Default Domain Policy and the two accounts → 0 failed, resolved 4 (ECC 2 pass). Fixtures `lab-default`
   (5 objects), `lab-seeded` and `lab-fixed` (22 each) recorded; truth table green on all three, none
   skipped; 98 tests pass, ruff and mypy clean. DC1 is left in the after-fix state.
+- 2026-09-25: **Increment 4 code done** (plan `docs/superpowers/plans/2026-09-25-increment4-plain-attributes.md`,
+  reviewed before approval): the collector also reads SPNs, password words in description/info/comment
+  (indicator only, never the text), computers (named `APP01$`) and the machine account quota; DEL-01, KRB-03,
+  ACC-04 and DEL-05 with fix commands that work when pasted (checked on DC1 with `-WhatIf`). Live read-only
+  check on DC1: exactly KRB-03 ×3, ACC-04, DEL-01 `APP01$`, DEL-05. 139 tests pass (3 lab fixtures wait for
+  re-recording), ruff and mypy clean.
 
 ## Next actions (in order)
 
@@ -61,7 +67,10 @@ Tags: **[agent]** = an AI session; **[Naif]** = Naif (VMware, Group Policy Manag
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Increment 4, plan first: KRB-03, ACC-04, DEL-05, DEL-01 (seeds already in the lab). The collector must read SPNs, a password indicator in descriptions (never the text), the machine account quota and computers with delegation flags; exclude krbtgt (it has an SPN) and domain controllers (trusted for delegation). Fixtures: record `lab-fixed.json` first from DC1's current after-fix state, then `lab-seeded` from `seeded` and `lab-default` from `reader-ready` (push before each revert). | [agent] |
+| 1 | Increment 4 lab step 2: revert DC1 to `reader-ready`. | [Naif] |
+| 1a | `git pull`; record `lab-default.json` (3 problems); push. | [agent on DC1] |
+| 1b | Lab step 3: revert DC1 to `seeded`; then the agent pulls, records `lab-seeded.json` and scans (10 problems); Naif reads the Arabic of the 4 new cards. | [Naif, agent] |
+| 1c | Lab step 4: Naif pastes the six fixes from the report; the agent rescans (6 fixed, 4 still open), records `lab-fixed.json`; truth table 0 skipped; demo script; docs; push. | [Naif, agent] |
 | 2 | Increments 5–6 in order: 5 permissions and one path (redesign the path: AdminSDHolder, see `lab/README.md`) · 6 SYSVOL, krbtgt age, regressed. | [agent] |
 | 3 | Rehearse the demo from `seeded` (script in the notes repo, 4 problems) and time each step. | [Naif] |
 

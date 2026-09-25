@@ -16,18 +16,18 @@ was replaced by PWD-01 on 2026-09-23, D29: it needs an AD CS server, which is Ti
 
 | ID | Sev | Detection (derived fields) | Exclusions / notes | ECC |
 |---|---|---|---|---|
-| DEL-01 | Critical | `unconstrained_delegation` and not `is_dc` | — | 2-2-3-4 |
-| DEL-05 | High | domain `machine_account_quota` > 0 | — | 2-2-3-3 |
+| DEL-01 | Critical | user or computer `unconstrained_delegation` and not `is_dc` | domain controllers (primaryGroupID 516 or 521); disabled accounts are flagged too (the trust stays) | 2-2-3-4 |
+| DEL-05 | High | domain `machine_account_quota` > 0 | attribute only: a Group Policy that limits "Add workstations to domain" is not read yet (PingCastle `S-ADRegistration` accepts one) | 2-2-3-3 |
 | ACL-01 | Critical | domain object ACE with `ExtendedRight:DS-Replication-Get-Changes` + `-All` (or `AllExtendedRights`/`GenericAll`) | trustee not in Tier 0 v1 | 2-2-3-3 |
 | ACL-03 | Critical | ACE on a Tier 0 object with `GenericAll`, `GenericWrite`, `WriteDacl`, `WriteOwner` or `Owns` | trustee not in Tier 0 v1, not SELF/SYSTEM | 2-2-3-3 |
 | PRV-04 | Critical | user with `kerberoastable` and (`admin_count` = 1 or member of Tier 0 v1) | not krbtgt (`is_builtin`), enabled only | 2-2-3-4 |
 | KRB-01 | Critical | krbtgt `password_age_days` > threshold (default 180) | threshold is a documented parameter | 2-2-3-4 |
 | KRB-02 | High | user `asrep_roastable` and `enabled` | — | 2-2-3-4 |
-| KRB-03 | High | user `kerberoastable` and `enabled` | not krbtgt | 2-2-3-4 |
+| KRB-03 | High | user `kerberoastable` and `enabled` | not krbtgt (a built-in Administrator with an SPN is a finding) | 2-2-3-4 |
 | PWD-01 | High | domain `min_password_length` < 12 | threshold is a documented parameter | 2-2-3-1 |
 | GPO-01 | Critical | gpo `gpp_cpassword_files` non-empty | `not_assessed` when coverage `gpo_files` = none | 2-2-3-1 |
 | ACC-01 | High | user `passwd_notreqd` and `enabled` | none beyond `enabled`: the built-in Guest carries the flag but is disabled by default; an enabled Guest is a real finding | 2-2-3-1 |
-| ACC-04 | High | user `password_in_text_indicator` | evidence = attribute names only, never values | 2-2-3-1 |
+| ACC-04 | High | user `password_in_text_indicator` (enabled or not) | password words, not a bare `pass` (see `docs/architecture.md`); evidence = attribute names only, never values | 2-2-3-1 |
 
 Designed lab path for the demo: `helpdesk —GenericWrite→ svc_sql —MemberOf→ Domain Admins`
 (ACL-03 + PRV-04); the on-stage fix removes the GenericWrite ACE. See `lab/README.md`.
@@ -54,7 +54,7 @@ LDAP bit tests use the matching rule `1.2.840.113556.1.4.803` (bitwise AND). `Se
 | ACC-01 | Accounts with PASSWD_NOTREQD | High | `(userAccountControl:1.2.840.113556.1.4.803:=32)` | Blank password logon — T1078.002 | Clear flag, force reset | U |
 | ACC-02 | Password never expires (per-user) | Medium | UAC bit `65536` | Long-lived static creds — T1078.002 | Remove flag; move service accounts to gMSA | U |
 | ACC-03 | Reversible encryption per-user | Critical | UAC bit `128` | Cleartext recovery from DC — T1003.003 | Clear flag + reset password | U |
-| ACC-04 | Password in `description`/`info`/`comment` | High | `(\|(description=*pass*)(description=*pwd*)(info=*pass*))` — store a match indicator, never the value | Any user reads creds — T1552.001 | Purge attributes, rotate creds | U |
+| ACC-04 | Password in `description`/`info`/`comment` | High | `(\|(description=*pass*)(description=*pwd*)(info=*pass*))` — store a match indicator, never the value (built: word matching in English and Arabic, increment 4) | Any user reads creds — T1552 (no sub-technique covers a directory attribute) | Purge attributes, rotate creds | U |
 | ACC-05 | Built-in Administrator (RID 500) password stale | High | `(objectSid=*-500)` → `pwdLastSet` age >365d | Golden-ticket persistence / PtH — T1550.002 | Rotate, rename, disable interactive use | U |
 | ACC-06 | Guest account enabled | Medium | `(objectSid=*-501)` and UAC bit `2` not set | Anonymous-ish foothold — T1078 | Disable Guest | U |
 | ACC-07 | Service accounts with old passwords / no gMSA | High | `(&(servicePrincipalName=*)(objectCategory=user))` → `pwdLastSet` >365d; compare with `(objectClass=msDS-GroupManagedServiceAccount)` | Kerberoast offline crack — T1558.003 | Convert to gMSA/dMSA | U |
@@ -84,7 +84,7 @@ LDAP bit tests use the matching rule `1.2.840.113556.1.4.803` (bitwise AND). `Se
 |---|---|---|---|---|---|---|
 | KRB-01 | krbtgt password older than 180 days | Critical | `(sAMAccountName=krbtgt)` → `pwdLastSet` | Golden Ticket persistence — T1558.001 | Reset krbtgt twice, 10h+ apart | U |
 | KRB-02 | AS-REP roastable accounts | High | `(userAccountControl:1.2.840.113556.1.4.803:=4194304)` | Offline crack without any creds — T1558.004 | Enable Kerberos pre-auth | U |
-| KRB-03 | Kerberoastable user accounts | High | `(&(objectCategory=user)(servicePrincipalName=*)(!(sAMAccountName=krbtgt))(!(UAC:…:=2)))` | Offline TGS crack — T1558.003 | gMSA, AES-only, 25+ char passwords | U |
+| KRB-03 | Kerberoastable user accounts | High | `(&(objectCategory=user)(servicePrincipalName=*)(!(sAMAccountName=krbtgt))(!(UAC:…:=2)))` | Offline TGS crack — T1558.003 | gMSA, AES-only, long random passwords (Microsoft: at least 14) | U |
 | KRB-04 | RC4 / DES encryption permitted | High | `msDS-SupportedEncryptionTypes` absent, or bits `0x1/0x2/0x4` set without `0x18`; UAC bit `2097152` (DES only) | Cheap kerberoast + downgrade — T1558.003 | Set AES128+AES256 (`0x18`) domain-wide | U |
 | KRB-05 | Long Kerberos ticket lifetimes | Low | `GptTmpl.inf` → `MaxTicketAge`, `MaxServiceAge`, `MaxRenewAge`, `MaxClockSkew` | Stolen tickets stay valid longer — T1550.003 | TGT 10h, renew 7d, skew 5m | U |
 | KRB-06 | LM hash storage not disabled | High | GPO `NoLMHash` in `GptTmpl.inf` | Instantly crackable LM hashes — T1003.003 | Enable NoLMHash | U |
@@ -98,7 +98,7 @@ LDAP bit tests use the matching rule `1.2.840.113556.1.4.803` (bitwise AND). `Se
 
 | ID | Name | Sev | Detect | Impact / ATT&CK | Fix | Acc |
 |---|---|---|---|---|---|---|
-| DEL-01 | Unconstrained delegation on non-DC | Critical | `(&(userAccountControl:…:=524288)(!(primaryGroupID=516)))` on computers and users | Coerce DC auth → capture TGT → DA — T1187/T1550.003 | Remove; migrate to RBCD | U |
+| DEL-01 | Unconstrained delegation on non-DC | Critical | `(&(userAccountControl:…:=524288)(!(primaryGroupID=516))(!(primaryGroupID=521)))` on computers and users | Coerce DC auth → capture TGT → DA — T1187/T1550.003 | Remove; migrate to RBCD | U |
 | DEL-02 | Constrained delegation with protocol transition | High | `msDS-AllowedToDelegateTo` populated **and** UAC bit `16777216` | S4U2Self→S4U2Proxy impersonation — T1134 | Drop protocol transition; scope targets | U |
 | DEL-03 | Delegation targeting Tier 0 SPNs | Critical | `msDS-AllowedToDelegateTo` contains a DC/CIFS/LDAP/HOST SPN of a DC or Tier 0 host | Direct DC impersonation — T1550.003 | Remove delegation entry | U |
 | DEL-04 | Resource-Based Constrained Delegation configured unexpectedly | High | `(msDS-AllowedToActOnBehalfOfOtherIdentity=*)`; decode SD, flag non-Tier 0 principals | Attacker-written RBCD → SYSTEM on target — T1134 | Clear attribute; restrict `WriteProperty` on it | U |
