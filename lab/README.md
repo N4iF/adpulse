@@ -31,7 +31,6 @@ everywhere (LDAPS validates the host name); older documents that say `DC01` mean
 | DC time source | internet NTP (`time.windows.com`, `pool.ntp.org`), set 2026-09-24 |
 | Python on DC1 | 3.12.0 (per-user install), used by `uv` |
 | Snapshot `clean` taken | 2026-09-24 |
-| Snapshot `reader-ready` | 2026-09-24 (after `Setup-Lab.ps1`, before `Seed.ps1` and any scan; taken as `seeded`, renamed 2026-09-25) |
 | Snapshot `seeded` taken | 2026-09-25 (after `Seed.ps1`, before any scan — the demo start) |
 
 ## Snapshot discipline
@@ -43,10 +42,9 @@ A VMware snapshot revert also reverts the workspace on DC1's disk.
 3. Naif takes and reverts snapshots on the host (VMware UI or `vmrun`); a session inside the VM cannot
    revert its own machine.
 
-Snapshots: `clean` (domain built, dev tools installed, Active Directory unchanged), `reader-ready` (after
-`Setup-Lab.ps1`: reader and LDAPS, no organization — revert here to record `lab-default.json` again when the
-collector reads more) and `seeded` (after `Seed.ps1` too: the organization and its seeds, password policy
-still the Windows default, no scans yet — the demo's starting point). For the laptop demo, copy the VM folders (or export to
+Snapshots (two, D38): `clean` (domain built, dev tools installed, Active Directory unchanged — the safety
+net) and `seeded` (after `Setup-Lab.ps1` and `Seed.ps1`: reader, LDAPS, the organization and its seeds,
+password policy still the Windows default, no scans yet — the demo's starting point). For the laptop demo, copy the VM folders (or export to
 OVF) and open them in VMware on the laptop.
 
 ## Build
@@ -59,7 +57,7 @@ OVF) and open them in VMware on the laptop.
 | 4. Snapshot `clean` | host, Naif — done |
 | 5. MVP-1: run `Setup-Lab.ps1` in an elevated PowerShell on DC1 | DC1 — done |
 | 6. Increment 3: run `Seed.ps1` in an elevated PowerShell on DC1 | DC1 — done 2026-09-25 |
-| 7. Snapshot `seeded` (retaken after `Seed.ps1`; the old one kept as `reader-ready`) | host, Naif — done 2026-09-25 |
+| 7. Snapshot `seeded` (retaken after `Seed.ps1`) | host, Naif — done 2026-09-25 |
 
 ## MVP-1 lab (D31, D33) — the only lab work before MVP-1 is green
 
@@ -134,7 +132,6 @@ sAMAccountName, so the computer is `APP01$`; the fix commands in the report use 
 
 | Lab state | Problems |
 |---|---|
-| `reader-ready` → `lab-default.json` | 3: PWD-01, PWD-04, DEL-05 |
 | `seeded` → `lab-seeded.json` | 10: DEL-01 `APP01$` · ACC-01 · KRB-02 · KRB-03 ×3 · ACC-04 · DEL-05 · PWD-01 · PWD-04 |
 | after the demo fixes → `lab-fixed.json` | 4 still open: KRB-03 ×3, ACC-04 |
 
@@ -156,12 +153,12 @@ AdminSDHolder: SDProp resets their permissions about every hour, which would rem
 break the demo. Increment 5 designs the path and its seeds again (ACL-01, ACL-03, PRV-04), and no seed may
 give `helpdesk` a second route to Tier 0.
 
-**Clean baseline (full scope):** besides PWD-01 and PWD-04 above, a default domain also fails DEL-05
-(default quota) and possibly KRB-01 (threshold-dependent); `expected-findings.yaml` records each baseline
-finding as its increment lands.
+**Default objects:** a fresh domain fails PWD-01, PWD-04 and DEL-05 (and possibly KRB-01, threshold-dependent).
+There is no separate fresh-domain recording (D38): the `seeded` and after-fix recordings hold every default
+object, so a false alarm on one of them fails the truth table there.
 
 `expected-findings.yaml` = expected state → actual state → finding: the ground-truth dataset for the lab
-acceptance criteria (100% detection of seeded findings, 0 unexpected findings on the clean baseline, every
+acceptance criteria (100% detection of seeded findings, 0 unexpected findings on any object, every
 result with reproducible evidence, every remediation causing the expected lifecycle transition).
 
 ## Scripts

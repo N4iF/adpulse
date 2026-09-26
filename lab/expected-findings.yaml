@@ -1,16 +1,12 @@
 # lab/expected-findings.yaml — ground truth for the lab (lab/README.md), one schema for every increment.
 # Per lab state (a fixture recorded on DC1) and per check: the objects the check must flag.
 # A check that is not implemented yet is ignored until it lands. Every implemented check must be assessed
-# and must flag exactly these objects; a check missing from a state must flag nothing there.
+# and must flag exactly these objects; a check missing from a state must flag nothing there. Both states hold
+# every default object (Administrator, Guest, krbtgt, DC1, SRV01), so a false alarm on one fails here (D38).
 fixtures:
-  default_domain: lab-default.json   # fresh domain, default password policy, before Seed.ps1
   seeded: lab-seeded.json            # after Seed.ps1, default password policy (the demo start)
   after_fix: lab-fixed.json          # after the demo fixes (policy, temp.intern, svc_legacy, APP01$, quota)
 states:
-  default_domain:
-    PWD-01: [corp.local]
-    PWD-04: [corp.local]
-    DEL-05: [corp.local]             # increment 4: machine account quota left at the default 10
   seeded:
     PWD-01: [corp.local]
     PWD-04: [corp.local]

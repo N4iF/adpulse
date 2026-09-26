@@ -143,23 +143,21 @@ Must **not** be flagged:
 
 | Lab state | Problems |
 |---|---|
-| `reader-ready` → `lab-default.json` | 3: PWD-01, PWD-04, DEL-05 |
 | `seeded` → `lab-seeded.json` (demo start) | 10: DEL-01 `APP01$` · ACC-01 `temp.intern` · KRB-02 `svc_legacy` · KRB-03 `svc_backup`, `svc_sql`, `svc_web` · ACC-04 `contractor1` · DEL-05 · PWD-01 · PWD-04. 8 of 9 checks fail; ECC 2-2-3-1, 2-2-3-3 and 2-2-3-4 fail |
 | after the demo fixes → `lab-fixed.json` | 4 still open (KRB-03 ×3, ACC-04), 6 fixed; 7 of 9 checks pass; ECC 2-2-3-3 passes, 2-2-3-1 and 2-2-3-4 still fail |
 
 ## Lab steps (with Naif)
 
-DC1 is now in the increment-3 after-fix state. There are two reverts, each after a push. Commands run from
-`C:\ADPulse\adpulse`.
+DC1 is now in the increment-3 after-fix state. One revert, after a push. Commands run from
+`C:\ADPulse\adpulse`. (Changed 2026-09-26, D38: no fresh-domain recording and no `reader-ready` snapshot.)
 
 1. Code pushed (tests, ruff and mypy green; review). Then a read-only check of DC1 as it is:
    `uv run adsnap collect --out $env:TEMP\inc4.json`, then `uv run adrules evaluate $env:TEMP\inc4.json`.
    Expect KRB-03 ×3, ACC-04, DEL-01 `APP01$` and DEL-05. `DC1`, `SRV01` and `krbtgt` must not be flagged.
    — done 2026-09-25: exactly those; 25 objects, no errors, no free text in the snapshot
-2. Naif reverts DC1 to `reader-ready`. The agent runs `git pull` in both repos, then `uv run adsnap collect
-   --out packages\adrules\tests\fixtures\lab-default.json`, checks it against the truth table, commits and
-   pushes.
-3. Naif reverts DC1 to `seeded`. The agent runs `git pull`, records `lab-seeded.json` the same way, then
+2. (Dropped, D38: `lab-default.json` and the `reader-ready` snapshot.)
+3. Naif reverts DC1 to `seeded`. The agent runs `git pull` in both repos, then `uv run adsnap collect --out
+   packages\adrules\tests\fixtures\lab-seeded.json`, then
    `uv run adrules scan` → 10 problems. Naif reads the Arabic of the four new cards (wording check by a native
    speaker).
 4. Naif, in his own elevated PowerShell, pasting the commands from the report:
@@ -169,7 +167,7 @@ DC1 is now in the increment-3 after-fix state. There are two reverts, each after
    - `gpupdate /target:computer /force`.
 
    Then the agent runs `uv run adrules scan` → 6 resolved, 4 still open, and records `lab-fixed.json`.
-5. Truth table green on all three fixtures (0 skipped). Update the demo script in the notes repo: 10
+5. Truth table green on both fixtures (0 skipped). Update the demo script in the notes repo: 10
    problems, 6 fixed, 4 still open. Docs, status, build log; push. DC1 stays in this after-fix state for
    increment 5.
 

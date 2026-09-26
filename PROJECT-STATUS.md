@@ -67,10 +67,8 @@ Tags: **[agent]** = an AI session; **[Naif]** = Naif (VMware, Group Policy Manag
 
 | # | Action | Who |
 |---|---|---|
-| 1 | Increment 4 lab step 2: revert DC1 to `reader-ready`. | [Naif] |
-| 1a | `git pull`; record `lab-default.json` (3 problems); push. | [agent on DC1] |
-| 1b | Lab step 3: revert DC1 to `seeded`; then the agent pulls, records `lab-seeded.json` and scans (10 problems); Naif reads the Arabic of the 4 new cards. | [Naif, agent] |
-| 1c | Lab step 4: Naif pastes the six fixes from the report; the agent rescans (6 fixed, 4 still open), records `lab-fixed.json`; truth table 0 skipped; demo script; docs; push. | [Naif, agent] |
+| 1 | Increment 4 lab step 3: Naif reverts DC1 to `seeded`; the agent pulls both repos, copies `adpulse-notes\workspace\CLAUDE.md` to `C:\ADPulse\`, records `lab-seeded.json` and scans (10 problems); Naif reads the Arabic of the 4 new cards. | [Naif, agent on DC1] |
+| 1a | Lab step 4: Naif pastes the six fixes from the report; the agent rescans (6 fixed, 4 still open), records `lab-fixed.json`; truth table on both fixtures, 0 skipped; demo script; docs; push. | [Naif, agent] |
 | 2 | Increments 5–6 in order: 5 permissions and one path (redesign the path: AdminSDHolder, see `lab/README.md`) · 6 SYSVOL, krbtgt age, regressed. | [agent] |
 | 3 | Rehearse the demo from `seeded` (script in the notes repo, 4 problems) and time each step. | [Naif] |
 

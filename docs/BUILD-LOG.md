@@ -137,3 +137,9 @@ This log, together with the git history, is the honest timeline of the project.
   translated, and Arabic password words needed any spacing. Live read-only check on DC1: exactly KRB-03 ×3,
   ACC-04, DEL-01 `APP01$`, DEL-05 (DC1, SRV01, krbtgt not flagged; no free text stored). 139 tests pass (3
   lab fixtures to re-record); ruff and mypy clean.
+
+## 2026-09-26
+
+- **Two snapshots (D38, Naif).** `lab-default.json` and the `reader-ready` snapshot are dropped: the seeded
+  and after-fix recordings already hold every default object. The ground truth has two states; the lab keeps
+  `clean` and `seeded`. Increment 4's lab steps need one revert (to `seeded`).

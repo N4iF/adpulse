@@ -146,3 +146,12 @@ Dated decision log. Newest at the bottom. Each entry: decision, why, consequence
   stay as a small "Details" line on each problem. Why: control numbers and "not assessed" rows as the
   first view read as noise to the people who have to fix things. Consequence: every later view follows
   this order; the limitation sentence stays visible in the footer.
+
+## 2026-09-26
+
+- **D38 Two snapshots; no fresh-domain recording (Naif).** The lab keeps two VMware snapshots: `clean` (the
+  safety net) and `seeded` (the demo start). The fresh-domain fixture `lab-default.json` and the
+  `reader-ready` snapshot kept only to re-record it are dropped. Why: the `seeded` and after-fix recordings
+  hold every default object (Administrator, Guest, krbtgt, DC1, SRV01), so a false alarm on one of them
+  already fails the truth table; the fresh-domain file repeated that check and cost two snapshot reverts per
+  increment. The demo starts from `seeded` anyway.
